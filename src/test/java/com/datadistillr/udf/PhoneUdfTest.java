@@ -1,4 +1,4 @@
-package com.datadistillr.udfs;
+package com.datadistillr.udf;
 
 import org.apache.drill.common.types.TypeProtos.MinorType;
 import org.apache.drill.exec.physical.rowSet.RowSet;
@@ -23,20 +23,20 @@ public class PhoneUdfTest extends ClusterTest {
 
   @Test
   public void testPhoneNumberType() throws RpcException {
-    String sql = "SELECT getNumberType('4437623286', 'US')";
+    String sql = "SELECT getNumberType('4437623286', 'US') AS numType FROM (VALUES(1))";
 
     QueryBuilder q = client.queryBuilder().sql(sql);
     RowSet results = q.rowSet();
     results.print();
 
-    /*TupleMetadata expectedSchema = new SchemaBuilder()
-      .add("schema", MinorType.MAP)
+    TupleMetadata expectedSchema = new SchemaBuilder()
+      .add("numType", MinorType.VARCHAR)
       .build();
 
     RowSet expected = client.rowSetBuilder(expectedSchema)
-      .addRow((Object) mapArray())
+      .addRow("something")
       .build();
 
-    new RowSetComparison(expected).verifyAndClearAll(results);*/
+    new RowSetComparison(expected).verifyAndClearAll(results);
   }
 }
