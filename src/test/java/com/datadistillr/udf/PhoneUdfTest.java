@@ -27,14 +27,13 @@ public class PhoneUdfTest extends ClusterTest {
 
     QueryBuilder q = client.queryBuilder().sql(sql);
     RowSet results = q.rowSet();
-    results.print();
 
     TupleMetadata expectedSchema = new SchemaBuilder()
       .add("numType", MinorType.VARCHAR)
       .build();
 
     RowSet expected = client.rowSetBuilder(expectedSchema)
-      .addRow("something")
+      .addRow("FIXED_LINE_OR_MOBILE")
       .build();
 
     new RowSetComparison(expected).verifyAndClearAll(results);

@@ -55,5 +55,4 @@ public class PhoneNumberUDFs {
       buffer.setBytes(0, numberType.getBytes());
     }
   }
-
 }
