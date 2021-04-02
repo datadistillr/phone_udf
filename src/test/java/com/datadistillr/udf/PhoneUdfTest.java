@@ -131,4 +131,30 @@ public class PhoneUdfTest extends ClusterTest {
 
     new RowSetComparison(expected).verifyAndClearAll(results);
   }
+
+  @Test
+  public void testFormatNumber() throws RpcException {
+    String sql = "SELECT formatPhoneNumber('+49 69 920 39031', 'e164') AS num1, " +
+      "formatPhoneNumber('+49 69 920 39031', 'national')  AS num2, " +
+      "formatPhoneNumber('+49 69 920 39031', 'international') AS num3, " +
+      "formatPhoneNumber('+49 69 920 39031', 'rfc3966')  AS num4 " +
+      "FROM (VALUES(1))";
+
+    QueryBuilder q = client.queryBuilder().sql(sql);
+    RowSet results = q.rowSet();
+    results.print();
+
+    TupleMetadata expectedSchema = new SchemaBuilder()
+      .add("num1", MinorType.VARCHAR)
+      .add("num2", MinorType.VARCHAR)
+      .add("num3", MinorType.VARCHAR)
+      .add("num4", MinorType.VARCHAR)
+      .build();
+
+    RowSet expected = client.rowSetBuilder(expectedSchema)
+      .addRow("+496992039031", "069 92039031", "+49 69 92039031", "tel:+49-69-92039031")
+      .build();
+
+    new RowSetComparison(expected).verifyAndClearAll(results);
+  }
 }

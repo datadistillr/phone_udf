@@ -6,10 +6,9 @@ import org.apache.drill.exec.expr.annotations.FunctionTemplate;
 import org.apache.drill.exec.expr.annotations.Output;
 import org.apache.drill.exec.expr.annotations.Param;
 import org.apache.drill.exec.expr.annotations.Workspace;
+import org.apache.drill.exec.expr.holders.BigIntHolder;
 import org.apache.drill.exec.expr.holders.BitHolder;
 import org.apache.drill.exec.expr.holders.IntHolder;
-import org.apache.drill.exec.expr.holders.NullableBigIntHolder;
-import org.apache.drill.exec.expr.holders.NullableIntHolder;
 import org.apache.drill.exec.expr.holders.VarCharHolder;
 
 import javax.inject.Inject;
@@ -288,7 +287,7 @@ public class PhoneNumberUDFs {
     VarCharHolder inputPhoneNumber;
 
     @Output
-    NullableIntHolder out;
+    IntHolder out;
 
     @Workspace
     com.google.i18n.phonenumbers.PhoneNumberUtil phoneUtil;
@@ -323,7 +322,7 @@ public class PhoneNumberUDFs {
     VarCharHolder countryCodeHolder;
 
     @Output
-    NullableBigIntHolder out;
+    BigIntHolder out;
 
     @Workspace
     com.google.i18n.phonenumbers.PhoneNumberUtil phoneUtil;
@@ -355,7 +354,7 @@ public class PhoneNumberUDFs {
     VarCharHolder inputPhoneNumber;
 
     @Output
-    NullableBigIntHolder out;
+    BigIntHolder out;
 
     @Workspace
     com.google.i18n.phonenumbers.PhoneNumberUtil phoneUtil;
@@ -374,6 +373,64 @@ public class PhoneNumberUDFs {
       } catch (com.google.i18n.phonenumbers.NumberParseException e) {
         // Do nothing...
       }
+    }
+  }
+
+  @FunctionTemplate(names = {"format_phone_number", "formatPhoneNumber"},
+    scope = FunctionTemplate.FunctionScope.SIMPLE,
+    nulls = FunctionTemplate.NullHandling.NULL_IF_NULL)
+  public static class formatPhoneNumber implements DrillSimpleFunc {
+
+    @Param
+    VarCharHolder inputPhoneNumber;
+
+    @Param
+    VarCharHolder formatType;
+
+    @Output
+    VarCharHolder out;
+
+    @Inject
+    DrillBuf buffer;
+
+    @Workspace
+    com.google.i18n.phonenumbers.PhoneNumberUtil phoneUtil;
+
+    @Override
+    public void setup() {
+      phoneUtil = com.google.i18n.phonenumbers.PhoneNumberUtil.getInstance();
+    }
+
+    @Override
+    public void eval() {
+      String phoneNumber = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.getStringFromVarCharHolder(inputPhoneNumber);
+      String formatString = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.getStringFromVarCharHolder(formatType).toLowerCase();
+      com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat phoneNumberFormat = null;
+      String formattedNumber = "";
+
+      if (formatString.equalsIgnoreCase("e164")) {
+        phoneNumberFormat = com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat.E164;
+      } else if (formatString.equalsIgnoreCase("national")) {
+        phoneNumberFormat = com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat.NATIONAL;
+      } else if (formatString.equalsIgnoreCase("international")) {
+        phoneNumberFormat = com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat.INTERNATIONAL;
+      } else if (formatString.equalsIgnoreCase("rfc3966")) {
+        phoneNumberFormat = com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat.RFC3966;
+      } else {
+        // TODO Throw exception for unknown format
+      }
+
+      try {
+        com.google.i18n.phonenumbers.Phonenumber.PhoneNumber number = phoneUtil.parse(phoneNumber,"US");
+        formattedNumber = phoneUtil.format(number, phoneNumberFormat);
+      } catch (com.google.i18n.phonenumbers.NumberParseException e) {
+        // Do nothing...
+      }
+
+      out.buffer = buffer;
+      out.start = 0;
+      out.end = formattedNumber.getBytes().length;
+      buffer.setBytes(0, formattedNumber.getBytes());
     }
   }
 }
