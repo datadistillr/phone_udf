@@ -1,4 +1,11 @@
 # Drill Phone Number Utility Functions
 This collection of functions provide various capabilities relating to phone numbers.
 
-* `getNumberType(<phoneNumber>)`:  Returns the number type (toll free, mobile, land line etc.)
+### Region Codes:
+For all functions, there are two versions, one with a region code and one without.  This is only used if the number being parsed is not written in international format. The country calling code for the number in this case would be stored as that of the default region supplied.
+
+## Functions
+* `getNumberType(<phoneNumber>, <region_code>)`:  Returns the number type (toll free, mobile, land line etc.)  If the region code is omitted, it defaults to `US`.
+* `isValidPhoneNumber(<phoneNumber>)` Returns true if the supplied character sequence is a valid phone number, false if not. This does not mean a number can be successfully 
+  dialed, just that it is a valid phone number.
+* `normalizePhoneNumber(<phoneNumber>)`: This function removes all non-digit characters from a phone number. 
