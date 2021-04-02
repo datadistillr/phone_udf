@@ -7,6 +7,9 @@ import org.apache.drill.exec.expr.annotations.Output;
 import org.apache.drill.exec.expr.annotations.Param;
 import org.apache.drill.exec.expr.annotations.Workspace;
 import org.apache.drill.exec.expr.holders.BitHolder;
+import org.apache.drill.exec.expr.holders.IntHolder;
+import org.apache.drill.exec.expr.holders.NullableBigIntHolder;
+import org.apache.drill.exec.expr.holders.NullableIntHolder;
 import org.apache.drill.exec.expr.holders.VarCharHolder;
 
 import javax.inject.Inject;
@@ -171,6 +174,206 @@ public class PhoneNumberUDFs {
       out.start = 0;
       out.end = normalizedNumber.getBytes().length;
       buffer.setBytes(0, normalizedNumber.getBytes());
+    }
+  }
+
+  @FunctionTemplate(names = {"get_country_code", "getCountryCode"},
+    scope = FunctionTemplate.FunctionScope.SIMPLE,
+    nulls = FunctionTemplate.NullHandling.NULL_IF_NULL)
+  public static class getCountryCode implements DrillSimpleFunc {
+
+    @Param
+    VarCharHolder inputPhoneNumber;
+
+    @Param
+    VarCharHolder countryCodeHolder;
+
+    @Output
+    IntHolder out;
+
+    @Workspace
+    com.google.i18n.phonenumbers.PhoneNumberUtil phoneUtil;
+
+    @Override
+    public void setup() {
+      phoneUtil = com.google.i18n.phonenumbers.PhoneNumberUtil.getInstance();
+    }
+
+    @Override
+    public void eval() {
+      String phoneNumber = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.getStringFromVarCharHolder(inputPhoneNumber);
+      String countryCode = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.getStringFromVarCharHolder(countryCodeHolder);
+      try {
+        com.google.i18n.phonenumbers.Phonenumber.PhoneNumber number = phoneUtil.parse(phoneNumber,countryCode);
+        out.value = number.getCountryCode();
+      } catch (com.google.i18n.phonenumbers.NumberParseException e) {
+        // Do nothing...
+      }
+    }
+  }
+
+  @FunctionTemplate(names = {"get_country_code", "getCountryCode"},
+    scope = FunctionTemplate.FunctionScope.SIMPLE,
+    nulls = FunctionTemplate.NullHandling.NULL_IF_NULL)
+  public static class getCountryCodeWithoutRegion implements DrillSimpleFunc {
+
+    @Param
+    VarCharHolder inputPhoneNumber;
+
+    @Output
+    IntHolder out;
+
+    @Workspace
+    com.google.i18n.phonenumbers.PhoneNumberUtil phoneUtil;
+
+    @Override
+    public void setup() {
+      phoneUtil = com.google.i18n.phonenumbers.PhoneNumberUtil.getInstance();
+    }
+
+    @Override
+    public void eval() {
+      String phoneNumber = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.getStringFromVarCharHolder(inputPhoneNumber);
+      try {
+        com.google.i18n.phonenumbers.Phonenumber.PhoneNumber number = phoneUtil.parse(phoneNumber,"US");
+        out.value = number.getCountryCode();
+      } catch (com.google.i18n.phonenumbers.NumberParseException e) {
+        // Do nothing...
+      }
+    }
+  }
+
+
+  @FunctionTemplate(names = {"get_leading_zeroes", "getLeadingZeroes"},
+    scope = FunctionTemplate.FunctionScope.SIMPLE,
+    nulls = FunctionTemplate.NullHandling.NULL_IF_NULL)
+  public static class getLeadingZeroes implements DrillSimpleFunc {
+
+    @Param
+    VarCharHolder inputPhoneNumber;
+
+    @Param
+    VarCharHolder countryCodeHolder;
+
+    @Output
+    IntHolder out;
+
+    @Workspace
+    com.google.i18n.phonenumbers.PhoneNumberUtil phoneUtil;
+
+    @Override
+    public void setup() {
+      phoneUtil = com.google.i18n.phonenumbers.PhoneNumberUtil.getInstance();
+    }
+
+    @Override
+    public void eval() {
+      String phoneNumber = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.getStringFromVarCharHolder(inputPhoneNumber);
+      String countryCode = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.getStringFromVarCharHolder(countryCodeHolder);
+      try {
+        com.google.i18n.phonenumbers.Phonenumber.PhoneNumber number = phoneUtil.parse(phoneNumber,countryCode);
+        out.value = number.getNumberOfLeadingZeros();
+      } catch (com.google.i18n.phonenumbers.NumberParseException e) {
+        // Do nothing...
+      }
+    }
+  }
+
+  @FunctionTemplate(names = {"get_leading_zeroes", "getLeadingZeroes"},
+    scope = FunctionTemplate.FunctionScope.SIMPLE,
+    nulls = FunctionTemplate.NullHandling.NULL_IF_NULL)
+  public static class getLeadingZerosWithoutRegionCode implements DrillSimpleFunc {
+
+    @Param
+    VarCharHolder inputPhoneNumber;
+
+    @Output
+    NullableIntHolder out;
+
+    @Workspace
+    com.google.i18n.phonenumbers.PhoneNumberUtil phoneUtil;
+
+    @Override
+    public void setup() {
+      phoneUtil = com.google.i18n.phonenumbers.PhoneNumberUtil.getInstance();
+    }
+
+    @Override
+    public void eval() {
+      String phoneNumber = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.getStringFromVarCharHolder(inputPhoneNumber);
+      try {
+        com.google.i18n.phonenumbers.Phonenumber.PhoneNumber number = phoneUtil.parse(phoneNumber,"US");
+        out.value = number.getNumberOfLeadingZeros();
+      } catch (com.google.i18n.phonenumbers.NumberParseException e) {
+        // Do nothing...
+      }
+    }
+  }
+
+
+  @FunctionTemplate(names = {"get_national_number", "getNationalNumber"},
+    scope = FunctionTemplate.FunctionScope.SIMPLE,
+    nulls = FunctionTemplate.NullHandling.NULL_IF_NULL)
+  public static class getNationalNumber implements DrillSimpleFunc {
+
+    @Param
+    VarCharHolder inputPhoneNumber;
+
+    @Param
+    VarCharHolder countryCodeHolder;
+
+    @Output
+    NullableBigIntHolder out;
+
+    @Workspace
+    com.google.i18n.phonenumbers.PhoneNumberUtil phoneUtil;
+
+    @Override
+    public void setup() {
+      phoneUtil = com.google.i18n.phonenumbers.PhoneNumberUtil.getInstance();
+    }
+
+    @Override
+    public void eval() {
+      String phoneNumber = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.getStringFromVarCharHolder(inputPhoneNumber);
+      String countryCode = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.getStringFromVarCharHolder(countryCodeHolder);
+      try {
+        com.google.i18n.phonenumbers.Phonenumber.PhoneNumber number = phoneUtil.parse(phoneNumber,countryCode);
+        out.value = number.getNationalNumber();
+      } catch (com.google.i18n.phonenumbers.NumberParseException e) {
+        // Do nothing...
+      }
+    }
+  }
+
+  @FunctionTemplate(names = {"get_national_number", "getNationalNumber"},
+    scope = FunctionTemplate.FunctionScope.SIMPLE,
+    nulls = FunctionTemplate.NullHandling.NULL_IF_NULL)
+  public static class getNationalNumberWithoutRegion implements DrillSimpleFunc {
+
+    @Param
+    VarCharHolder inputPhoneNumber;
+
+    @Output
+    NullableBigIntHolder out;
+
+    @Workspace
+    com.google.i18n.phonenumbers.PhoneNumberUtil phoneUtil;
+
+    @Override
+    public void setup() {
+      phoneUtil = com.google.i18n.phonenumbers.PhoneNumberUtil.getInstance();
+    }
+
+    @Override
+    public void eval() {
+      String phoneNumber = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.getStringFromVarCharHolder(inputPhoneNumber);
+      try {
+        com.google.i18n.phonenumbers.Phonenumber.PhoneNumber number = phoneUtil.parse(phoneNumber,"US");
+        out.value = number.getNationalNumber();
+      } catch (com.google.i18n.phonenumbers.NumberParseException e) {
+        // Do nothing...
+      }
     }
   }
 }

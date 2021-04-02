@@ -106,4 +106,29 @@ public class PhoneUdfTest extends ClusterTest {
 
     new RowSetComparison(expected).verifyAndClearAll(results);
   }
+
+  @Test
+  public void testGetCountryCode() throws RpcException {
+    String sql = "SELECT getCountryCode('8432158473') AS num1, " +
+      "getCountryCode('(843) 215-8473') AS num2, " +
+      "getCountryCode('+49 69 920 39031') AS num3, " +
+      "getCountryCode('01 48 87 20 16') AS num4 " +
+      "FROM (VALUES(1))";
+
+    QueryBuilder q = client.queryBuilder().sql(sql);
+    RowSet results = q.rowSet();
+
+    TupleMetadata expectedSchema = new SchemaBuilder()
+      .add("num1", MinorType.INT)
+      .add("num2", MinorType.INT)
+      .add("num3", MinorType.INT)
+      .add("num4", MinorType.INT)
+      .build();
+
+    RowSet expected = client.rowSetBuilder(expectedSchema)
+      .addRow(1,1,49,1)
+      .build();
+
+    new RowSetComparison(expected).verifyAndClearAll(results);
+  }
 }
