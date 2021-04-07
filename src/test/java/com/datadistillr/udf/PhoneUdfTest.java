@@ -142,7 +142,6 @@ public class PhoneUdfTest extends ClusterTest {
 
     QueryBuilder q = client.queryBuilder().sql(sql);
     RowSet results = q.rowSet();
-    results.print();
 
     TupleMetadata expectedSchema = new SchemaBuilder()
       .add("num1", MinorType.VARCHAR)

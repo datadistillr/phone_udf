@@ -9,3 +9,4 @@ For all functions, there are two versions, one with a region code and one withou
 * `isValidPhoneNumber(<phoneNumber>)` Returns true if the supplied character sequence is a valid phone number, false if not. This does not mean a number can be successfully 
   dialed, just that it is a valid phone number.
 * `normalizePhoneNumber(<phoneNumber>)`: This function removes all non-digit characters from a phone number. 
+* `formatPhoneNumber(<phoneNumber>, <format>)`:   Accepts a phone number and formats it in one of four possible formats which are: `e164`, `national`, `international`, `rfc3966`.

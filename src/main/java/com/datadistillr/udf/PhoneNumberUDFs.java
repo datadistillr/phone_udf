@@ -1,6 +1,7 @@
 package com.datadistillr.udf;
 
 import io.netty.buffer.DrillBuf;
+import org.apache.drill.common.exceptions.UserException;
 import org.apache.drill.exec.expr.DrillSimpleFunc;
 import org.apache.drill.exec.expr.annotations.FunctionTemplate;
 import org.apache.drill.exec.expr.annotations.Output;
@@ -10,6 +11,7 @@ import org.apache.drill.exec.expr.holders.BigIntHolder;
 import org.apache.drill.exec.expr.holders.BitHolder;
 import org.apache.drill.exec.expr.holders.IntHolder;
 import org.apache.drill.exec.expr.holders.VarCharHolder;
+import org.codehaus.janino.Java;
 
 import javax.inject.Inject;
 
@@ -405,32 +407,14 @@ public class PhoneNumberUDFs {
     public void eval() {
       String phoneNumber = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.getStringFromVarCharHolder(inputPhoneNumber);
       String formatString = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.getStringFromVarCharHolder(formatType).toLowerCase();
-      com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat phoneNumberFormat = null;
-      String formattedNumber = "";
+      String formattedNumber = com.datadistillr.udf.PhoneUtils.formatPhoneNumber(phoneUtil, phoneNumber, formatString, null);
 
-      if (formatString.equalsIgnoreCase("e164")) {
-        phoneNumberFormat = com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat.E164;
-      } else if (formatString.equalsIgnoreCase("national")) {
-        phoneNumberFormat = com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat.NATIONAL;
-      } else if (formatString.equalsIgnoreCase("international")) {
-        phoneNumberFormat = com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat.INTERNATIONAL;
-      } else if (formatString.equalsIgnoreCase("rfc3966")) {
-        phoneNumberFormat = com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat.RFC3966;
-      } else {
-        // TODO Throw exception for unknown format
+      if (formattedNumber != null) {
+        out.buffer = buffer;
+        out.start = 0;
+        out.end = formattedNumber.getBytes().length;
+        buffer.setBytes(0, formattedNumber.getBytes());
       }
-
-      try {
-        com.google.i18n.phonenumbers.Phonenumber.PhoneNumber number = phoneUtil.parse(phoneNumber,"US");
-        formattedNumber = phoneUtil.format(number, phoneNumberFormat);
-      } catch (com.google.i18n.phonenumbers.NumberParseException e) {
-        // Do nothing...
-      }
-
-      out.buffer = buffer;
-      out.start = 0;
-      out.end = formattedNumber.getBytes().length;
-      buffer.setBytes(0, formattedNumber.getBytes());
     }
   }
 }
