@@ -133,6 +133,33 @@ public class PhoneUdfTest extends ClusterTest {
   }
 
   @Test
+  public void testGetNationalNumber() throws RpcException {
+    String sql = "SELECT getNationalNumber('8432158473') AS num1, " +
+      "getNationalNumber('(843) 215-8473') AS num2, " +
+      "getNationalNumber('+49 69 920 39031') AS num3, " +
+      "getNationalNumber('01 48 87 20 16', 'FR') AS num4 " +
+      "FROM (VALUES(1))";
+
+    QueryBuilder q = client.queryBuilder().sql(sql);
+    RowSet results = q.rowSet();
+    results.print();
+
+    TupleMetadata expectedSchema = new SchemaBuilder()
+      .add("num1", MinorType.BIGINT)
+      .add("num2", MinorType.BIGINT)
+      .add("num3", MinorType.BIGINT)
+      .add("num4", MinorType.BIGINT)
+      .build();
+
+    RowSet expected = client.rowSetBuilder(expectedSchema)
+      .addRow(8432158473L, 8432158473L, 6992039031L, 148872016L)
+      .build();
+
+    new RowSetComparison(expected).verifyAndClearAll(results);
+  }
+
+
+  @Test
   public void testFormatNumber() throws RpcException {
     String sql = "SELECT formatPhoneNumber('+49 69 920 39031', 'e164') AS num1, " +
       "formatPhoneNumber('+49 69 920 39031', 'national')  AS num2, " +
