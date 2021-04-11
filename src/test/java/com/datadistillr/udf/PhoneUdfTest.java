@@ -142,7 +142,6 @@ public class PhoneUdfTest extends ClusterTest {
 
     QueryBuilder q = client.queryBuilder().sql(sql);
     RowSet results = q.rowSet();
-    results.print();
 
     TupleMetadata expectedSchema = new SchemaBuilder()
       .add("num1", MinorType.BIGINT)
@@ -182,5 +181,65 @@ public class PhoneUdfTest extends ClusterTest {
       .build();
 
     new RowSetComparison(expected).verifyAndClearAll(results);
+  }
+
+  @Test
+  public void testMatchNumber() throws RpcException {
+    String sql = "SELECT is_phone_number_match('+49 69 920 39031', '+496992039031') AS num1, " +
+      "is_phone_number_match('1(443) 111-2222', '4431112222')  AS num2, " +
+      "is_phone_number_match(truncatePhoneNumber(convertAlphaCharactersInPhoneNumber('1-800-MICROSOFT')), '18006427676') AS num3, " +
+      "is_phone_number_match('(443)111-2222', 'bob')  AS num4 " +
+      "FROM (VALUES(1))";
+
+    QueryBuilder q = client.queryBuilder().sql(sql);
+    RowSet results = q.rowSet();
+
+    TupleMetadata expectedSchema = new SchemaBuilder()
+      .add("num1", MinorType.BIT)
+      .add("num2", MinorType.BIT)
+      .add("num3", MinorType.BIT)
+      .add("num4", MinorType.BIT)
+      .build();
+
+    RowSet expected = client.rowSetBuilder(expectedSchema)
+      .addRow(true, true, true, false)
+      .build();
+
+    new RowSetComparison(expected).verifyAndClearAll(results);
+  }
+
+  /*@Test
+  public void testGetCarrier() throws Exception {
+    String sql = "SELECT getCarrier('(410) 580-0872') FROM (VALUES(1))";
+    QueryBuilder q = client.queryBuilder().sql(sql);
+    RowSet results = q.rowSet();
+    results.print();
+  }*/
+
+  @Test
+  public void testLocation() throws Exception {
+    String sql = "SELECT geoLocatePhoneNumber('(410) 943-2101') as num1, " +
+      "geoLocatePhoneNumber('bob') as num2, " +
+      "geoLocatePhoneNumber('+49 800 910-8000') as num3, " +
+      "geoLocatePhoneNumber('+49 69 21000002') as num4, " +
+      "geoLocatePhoneNumber('(480) 834-8319') as num5 " +
+      "FROM (VALUES(1))";
+    QueryBuilder q = client.queryBuilder().sql(sql);
+    RowSet results = q.rowSet();
+
+    TupleMetadata expectedSchema = new SchemaBuilder()
+      .add("num1", MinorType.VARCHAR)
+      .add("num2", MinorType.VARCHAR)
+      .add("num3", MinorType.VARCHAR)
+      .add("num4", MinorType.VARCHAR)
+      .add("num5", MinorType.VARCHAR)
+      .build();
+
+    RowSet expected = client.rowSetBuilder(expectedSchema)
+      .addRow( "Hurlock, MD", "Invalid Number", "Germany", "Frankfurt am Main", "Mesa, AZ")
+      .build();
+
+    new RowSetComparison(expected).verifyAndClearAll(results);
+
   }
 }

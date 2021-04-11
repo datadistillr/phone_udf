@@ -2,7 +2,7 @@
 This collection of functions provide various capabilities relating to phone numbers.
 
 ### Region Codes:
-For all functions, there are two versions, one with a region code and one without.  This is only used if the number being parsed is not written in international format. The country calling code for the number in this case would be stored as that of the default region supplied.
+For most functions, there are two versions, one with a region code and one without.  This is only used if the number being parsed is not written in international format. The country calling code for the number in this case would be stored as that of the default region supplied.
 
 ## Functions
 * `formatPhoneNumber(<phoneNumber>, <format>)`:  Accepts a phone number and formats it in one of four possible formats which are: `e164`, `national`, `international`, `rfc3966`.

@@ -1,6 +1,7 @@
 package com.datadistillr.udf;
 
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
+import com.google.i18n.phonenumbers.PhoneNumberUtil.MatchType;
 import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
 import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 import org.apache.parquet.Strings;
@@ -44,5 +45,24 @@ public class PhoneUtils {
       return null;
     }
     return formattedNumber;
+  }
+
+  /**
+   * This helper function compares two phone numbers and returns true if they are a match.  Note that
+   * the Google phone number library has different classes of match which are: {@link com.google.i18n.phonenumbers.PhoneNumberUtil.MatchType}.
+   * This method returns false if the match is a NO_MATCH or NOT_A_NUMBER.
+   *
+   * @param phoneUtil The phoneUtil object created in the setup() function of a Drill UDF
+   * @param n1 The first phone number string
+   * @param n2 The second phone number strin
+   * @return True if the numbers match, false if not
+   */
+  public static boolean isMatch (PhoneNumberUtil phoneUtil, String n1, String n2) {
+    MatchType match = phoneUtil.isNumberMatch(n1, n2);
+    if (match == MatchType.NO_MATCH || match == MatchType.NOT_A_NUMBER) {
+      return false;
+    } else {
+      return true;
+    }
   }
 }

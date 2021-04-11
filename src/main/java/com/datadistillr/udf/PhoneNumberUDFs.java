@@ -1,7 +1,6 @@
 package com.datadistillr.udf;
 
 import io.netty.buffer.DrillBuf;
-import org.apache.drill.common.exceptions.UserException;
 import org.apache.drill.exec.expr.DrillSimpleFunc;
 import org.apache.drill.exec.expr.annotations.FunctionTemplate;
 import org.apache.drill.exec.expr.annotations.Output;
@@ -11,9 +10,9 @@ import org.apache.drill.exec.expr.holders.BigIntHolder;
 import org.apache.drill.exec.expr.holders.BitHolder;
 import org.apache.drill.exec.expr.holders.IntHolder;
 import org.apache.drill.exec.expr.holders.VarCharHolder;
-import org.codehaus.janino.Java;
 
 import javax.inject.Inject;
+import java.awt.datatransfer.StringSelection;
 
 public class PhoneNumberUDFs {
 
@@ -415,6 +414,251 @@ public class PhoneNumberUDFs {
         out.end = formattedNumber.getBytes().length;
         buffer.setBytes(0, formattedNumber.getBytes());
       }
+    }
+  }
+
+  @FunctionTemplate(names = {"is_phone_number_match", "isPhoneNumberMatch"},
+    scope = FunctionTemplate.FunctionScope.SIMPLE,
+    nulls = FunctionTemplate.NullHandling.NULL_IF_NULL)
+  public static class isPhoneNumberMatchUDF implements DrillSimpleFunc {
+    @Param
+    VarCharHolder number1;
+
+    @Param
+    VarCharHolder number2;
+
+    @Output
+    BitHolder out;
+
+    @Workspace
+    com.google.i18n.phonenumbers.PhoneNumberUtil phoneUtil;
+
+    @Override
+    public void setup() {
+      phoneUtil = com.google.i18n.phonenumbers.PhoneNumberUtil.getInstance();
+    }
+
+    @Override
+    public void eval() {
+      String n1 = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.getStringFromVarCharHolder(number1);
+      String n2 = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.getStringFromVarCharHolder(number2);
+
+      boolean isMatch = com.datadistillr.udf.PhoneUtils.isMatch(phoneUtil, n1, n2);
+      out.value = (isMatch) ? 1 : 0;
+    }
+  }
+
+
+  @FunctionTemplate(names = {"convertAlphaCharactersInPhoneNumber", "convert_alpha_characters_in_phone_number"},
+    scope = FunctionTemplate.FunctionScope.SIMPLE,
+    nulls = FunctionTemplate.NullHandling.NULL_IF_NULL)
+  public static class convertAlphaUDF implements DrillSimpleFunc {
+    @Param
+    VarCharHolder number1;
+
+    @Output
+    VarCharHolder out;
+
+    @Inject
+    DrillBuf buffer;
+
+    @Override
+    public void setup() {
+    }
+
+    @Override
+    public void eval() {
+      String rawNumber = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.getStringFromVarCharHolder(number1);
+      String numberWithoutAlphaCharacters = com.google.i18n.phonenumbers.PhoneNumberUtil.convertAlphaCharactersInNumber(rawNumber);
+
+      out.buffer = buffer;
+      out.start = 0;
+      out.end = numberWithoutAlphaCharacters.getBytes().length;
+      buffer.setBytes(0, numberWithoutAlphaCharacters.getBytes());
+    }
+  }
+
+  @FunctionTemplate(names = {"truncatePhoneNumber", "truncate_phone_number"},
+    scope = FunctionTemplate.FunctionScope.SIMPLE,
+    nulls = FunctionTemplate.NullHandling.NULL_IF_NULL)
+  public static class truncatePhoneNumberUDF implements DrillSimpleFunc {
+    @Param
+    VarCharHolder inputPhoneNumber;
+
+    @Output
+    VarCharHolder out;
+
+    @Inject
+    DrillBuf buffer;
+
+    @Workspace
+    com.google.i18n.phonenumbers.PhoneNumberUtil phoneUtil;
+
+    @Override
+    public void setup() {
+      phoneUtil = com.google.i18n.phonenumbers.PhoneNumberUtil.getInstance();
+    }
+
+    @Override
+    public void eval() {
+      String phoneNumber = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.getStringFromVarCharHolder(inputPhoneNumber);
+
+      String truncatedNumber = "";
+      try {
+        com.google.i18n.phonenumbers.Phonenumber.PhoneNumber number = phoneUtil.parse(phoneNumber,"US");
+        if (phoneUtil.truncateTooLongNumber(number)) {
+          truncatedNumber = phoneUtil.format(number, com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat.E164 );
+        }
+      } catch (com.google.i18n.phonenumbers.NumberParseException e) {
+        // Do nothing...
+      }
+
+      out.buffer = buffer;
+      out.start = 0;
+      out.end = truncatedNumber.getBytes().length;
+      buffer.setBytes(0, truncatedNumber.getBytes());
+    }
+  }
+
+  @FunctionTemplate(names = {"truncatePhoneNumber", "truncate_phone_number"},
+    scope = FunctionTemplate.FunctionScope.SIMPLE,
+    nulls = FunctionTemplate.NullHandling.NULL_IF_NULL)
+  public static class truncatePhoneNumberWithRegionUDF implements DrillSimpleFunc {
+    @Param
+    VarCharHolder inputPhoneNumber;
+
+    @Param
+    VarCharHolder regionCodeHolder;
+
+    @Output
+    VarCharHolder out;
+
+    @Inject
+    DrillBuf buffer;
+
+    @Workspace
+    com.google.i18n.phonenumbers.PhoneNumberUtil phoneUtil;
+
+    @Override
+    public void setup() {
+      phoneUtil = com.google.i18n.phonenumbers.PhoneNumberUtil.getInstance();
+    }
+
+    @Override
+    public void eval() {
+      String phoneNumber = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.getStringFromVarCharHolder(inputPhoneNumber);
+      String regionCode = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.getStringFromVarCharHolder(regionCodeHolder);
+
+      String truncatedNumber = "";
+      try {
+        com.google.i18n.phonenumbers.Phonenumber.PhoneNumber number = phoneUtil.parse(phoneNumber,regionCode);
+        if (phoneUtil.truncateTooLongNumber(number)) {
+          truncatedNumber = phoneUtil.format(number, com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat.E164 );
+        }
+      } catch (com.google.i18n.phonenumbers.NumberParseException e) {
+        // Do nothing...
+      }
+
+      out.buffer = buffer;
+      out.start = 0;
+      out.end = truncatedNumber.getBytes().length;
+      buffer.setBytes(0, truncatedNumber.getBytes());
+    }
+  }
+
+  @FunctionTemplate(names = {"getCarrier", "get_carrier"},
+    scope = FunctionTemplate.FunctionScope.SIMPLE,
+    nulls = FunctionTemplate.NullHandling.NULL_IF_NULL)
+  public static class getCarrierUDF implements DrillSimpleFunc {
+    @Param
+    VarCharHolder inputPhoneNumber;
+
+    @Output
+    VarCharHolder out;
+
+    @Inject
+    DrillBuf buffer;
+
+    @Workspace
+    com.google.i18n.phonenumbers.PhoneNumberUtil phoneUtil;
+
+    @Workspace
+    com.google.i18n.phonenumbers.PhoneNumberToCarrierMapper mapper;
+
+    @Override
+    public void setup() {
+      phoneUtil = com.google.i18n.phonenumbers.PhoneNumberUtil.getInstance();
+      java.net.URL mapperDataPath = this.getClass().getClassLoader().getResource("carrier/");
+      mapper = com.google.i18n.phonenumbers.PhoneNumberToCarrierMapper.getInstance();
+    }
+
+    @Override
+    public void eval() {
+      String phoneNumber = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.getStringFromVarCharHolder(inputPhoneNumber);
+      String carrier = "Unknown";
+
+      try {
+        com.google.i18n.phonenumbers.Phonenumber.PhoneNumber number = phoneUtil.parse(phoneNumber,"US");
+        carrier = mapper.getSafeDisplayName(number, java.util.Locale.ENGLISH);
+
+      } catch (com.google.i18n.phonenumbers.NumberParseException e) {
+        // Do nothing...
+      }
+
+      out.buffer = buffer;
+      out.start = 0;
+      out.end = carrier.getBytes().length;
+      buffer.setBytes(0, carrier.getBytes());
+    }
+  }
+
+  @FunctionTemplate(names = {"locatePhoneNumber", "locate_phone_number", "geoLocatePhoneNumber", "geolocate_phone_number"},
+    scope = FunctionTemplate.FunctionScope.SIMPLE,
+    nulls = FunctionTemplate.NullHandling.NULL_IF_NULL)
+  public static class geolocatePhoneNumberUDF implements DrillSimpleFunc {
+    @Param
+    VarCharHolder inputPhoneNumber;
+
+    @Output
+    VarCharHolder out;
+
+    @Inject
+    DrillBuf buffer;
+
+    @Workspace
+    com.google.i18n.phonenumbers.PhoneNumberUtil phoneUtil;
+
+    @Workspace
+    com.google.i18n.phonenumbers.geocoding.PhoneNumberOfflineGeocoder geocoder;
+
+    @Override
+    public void setup() {
+      phoneUtil = com.google.i18n.phonenumbers.PhoneNumberUtil.getInstance();
+      geocoder = com.google.i18n.phonenumbers.geocoding.PhoneNumberOfflineGeocoder.getInstance();
+    }
+
+    @Override
+    public void eval() {
+      String phoneNumber = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.getStringFromVarCharHolder(inputPhoneNumber);
+      String location;
+
+      try {
+        com.google.i18n.phonenumbers.Phonenumber.PhoneNumber number = phoneUtil.parse(phoneNumber,"US");
+        location = geocoder.getDescriptionForNumber(number, java.util.Locale.ENGLISH);
+
+        if (location.isEmpty()) {
+          location = "Unknown";
+        }
+
+      } catch (com.google.i18n.phonenumbers.NumberParseException e) {
+        // Do nothing...
+        location = "Invalid Number";
+      }
+
+      out.buffer = buffer;
+      out.start = 0;
+      out.end = location.getBytes().length;
+      buffer.setBytes(0, location.getBytes());
     }
   }
 }
