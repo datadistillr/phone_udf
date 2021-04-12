@@ -1,8 +1,5 @@
 package com.datadistillr.udf;
 
-import com.google.i18n.phonenumbers.PhoneNumberToCarrierMapper;
-import com.google.i18n.phonenumbers.PhoneNumberUtil;
-import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 import org.apache.drill.common.types.TypeProtos.MinorType;
 import org.apache.drill.exec.physical.rowSet.RowSet;
 import org.apache.drill.exec.record.metadata.SchemaBuilder;
@@ -15,8 +12,6 @@ import org.apache.drill.test.QueryBuilder;
 import org.apache.drill.test.rowSet.RowSetComparison;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import java.util.Locale;
 
 public class PhoneUdfTest extends ClusterTest {
 
@@ -215,10 +210,24 @@ public class PhoneUdfTest extends ClusterTest {
 
   @Test
   public void testGetCarrier() throws Exception {
-    String sql = "SELECT getCarrier('+41 798765432') FROM (VALUES(1))";
+    String sql = "SELECT getCarrier('+41 798765432') as num1, " +
+      "getCarrier('+972 2-569-5695') as num2, " +
+      "getCarrier('+33 6 10 22 02 77') as num3 " +
+      "FROM (VALUES(1))";
+
     QueryBuilder q = client.queryBuilder().sql(sql);
     RowSet results = q.rowSet();
-    results.print();
+
+    TupleMetadata expectedSchema = new SchemaBuilder()
+      .add("num1", MinorType.VARCHAR)
+      .add("num2", MinorType.VARCHAR)
+      .add("num3", MinorType.VARCHAR)
+      .build();
+    RowSet expected = client.rowSetBuilder(expectedSchema)
+      .addRow("Swisscom", "Undefined", "SFR")
+      .build();
+
+    new RowSetComparison(expected).verifyAndClearAll(results);
   }
 
   @Test
@@ -245,27 +254,5 @@ public class PhoneUdfTest extends ClusterTest {
       .build();
 
     new RowSetComparison(expected).verifyAndClearAll(results);
-
-  }
-
-  @Test
-  public void testCarrier() throws Exception{
-    PhoneNumber swissMobileNumber =
-      new PhoneNumber().setCountryCode(41).setNationalNumber(798765432L);
-    PhoneNumberToCarrierMapper carrierMapper = PhoneNumberToCarrierMapper.getInstance();
-// Outputs "Swisscom"
-    System.out.println(carrierMapper.getNameForNumber(swissMobileNumber, Locale.ENGLISH));
-    System.out.println(swissMobileNumber);
-    PhoneNumberUtil phoneUtil = PhoneNumberUtil.getInstance();
-    PhoneNumber number = phoneUtil.parse("+41 798765432","US");
-
-    System.out.println(number);
-    System.out.println(carrierMapper.getNameForNumber(number, Locale.ENGLISH));
-
-    PhoneNumber number2 = phoneUtil.parse("+1 (443)762-3286","US");
-
-    System.out.println(number2);
-    System.out.println(carrierMapper.getNameForNumber(number2, Locale.ENGLISH));
   }
 }
-

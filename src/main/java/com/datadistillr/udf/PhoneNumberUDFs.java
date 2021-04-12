@@ -598,6 +598,10 @@ public class PhoneNumberUDFs {
         com.google.i18n.phonenumbers.Phonenumber.PhoneNumber number = phoneUtil.parse(phoneNumber,"US");
         carrier = mapper.getNameForNumber(number, java.util.Locale.ENGLISH);
 
+        if (carrier.isEmpty()) {
+          carrier = "Undefined";
+        }
+
       } catch (com.google.i18n.phonenumbers.NumberParseException e) {
         // Do nothing...
       }
