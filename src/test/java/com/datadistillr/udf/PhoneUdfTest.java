@@ -1,5 +1,8 @@
 package com.datadistillr.udf;
 
+import com.google.i18n.phonenumbers.PhoneNumberToCarrierMapper;
+import com.google.i18n.phonenumbers.PhoneNumberUtil;
+import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
 import org.apache.drill.common.types.TypeProtos.MinorType;
 import org.apache.drill.exec.physical.rowSet.RowSet;
 import org.apache.drill.exec.record.metadata.SchemaBuilder;
@@ -12,6 +15,8 @@ import org.apache.drill.test.QueryBuilder;
 import org.apache.drill.test.rowSet.RowSetComparison;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.util.Locale;
 
 public class PhoneUdfTest extends ClusterTest {
 
@@ -242,4 +247,25 @@ public class PhoneUdfTest extends ClusterTest {
     new RowSetComparison(expected).verifyAndClearAll(results);
 
   }
+
+  @Test
+  public void testCarrier() throws Exception{
+    PhoneNumber swissMobileNumber =
+      new PhoneNumber().setCountryCode(41).setNationalNumber(798765432L);
+    PhoneNumberToCarrierMapper carrierMapper = PhoneNumberToCarrierMapper.getInstance();
+// Outputs "Swisscom"
+    System.out.println(carrierMapper.getNameForNumber(swissMobileNumber, Locale.ENGLISH));
+    System.out.println(swissMobileNumber);
+    PhoneNumberUtil phoneUtil = PhoneNumberUtil.getInstance();
+    PhoneNumber number = phoneUtil.parse("+41 798765432","US");
+
+    System.out.println(number);
+    System.out.println(carrierMapper.getNameForNumber(number, Locale.ENGLISH));
+
+    PhoneNumber number2 = phoneUtil.parse("+1 (443)762-3286","US");
+
+    System.out.println(number2);
+    System.out.println(carrierMapper.getNameForNumber(number2, Locale.ENGLISH));
+  }
 }
+

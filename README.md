@@ -5,11 +5,11 @@ This collection of functions provide various capabilities relating to phone numb
 For most functions, there are two versions, one with a region code and one without.  This is only used if the number being parsed is not written in international format. The country calling code for the number in this case would be stored as that of the default region supplied.
 
 ## Functions
-* `convertAlphaCharactersInPhoneNumber(<phoneNumber>)` Converts phone numbers with alpha characters to solely numbers.
+* `numberize(<phoneNumber>)` Converts phone numbers with alpha characters to solely numbers.
 
 * `formatPhoneNumber(<phoneNumber>, <format>)`:  Accepts a phone number and formats it in one of four possible formats which are: `e164`, `national`, `international`, `rfc3966`.
  
-* `getCarrier(<phoneNumber>)`: **NOT WORKING** Returns the carrier of a given number.
+* `getCarrier(<phoneNumber>)`: Returns the carrier of a given number if available.
  
 * `getCountryCode(<phoneNumber>)`: Accepts a phone number and returns the country code for that number.  IE: 1 for US, 49 for Germany. It does not matter if the user included 
   the country code or not in the input.  This function should not be used for geo-location as some countries have multiple country codes and some country codes are shared by 

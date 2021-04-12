@@ -447,7 +447,7 @@ public class PhoneNumberUDFs {
     }
   }
 
-  @FunctionTemplate(names = {"convertAlphaCharactersInPhoneNumber", "convert_alpha_characters_in_phone_number"},
+  @FunctionTemplate(names = {"numberize", "convertAlphaCharactersInPhoneNumber", "convert_alpha_characters_in_phone_number"},
     scope = FunctionTemplate.FunctionScope.SIMPLE,
     nulls = FunctionTemplate.NullHandling.NULL_IF_NULL)
   public static class convertAlphaUDF implements DrillSimpleFunc {
@@ -596,7 +596,7 @@ public class PhoneNumberUDFs {
 
       try {
         com.google.i18n.phonenumbers.Phonenumber.PhoneNumber number = phoneUtil.parse(phoneNumber,"US");
-        carrier = mapper.getSafeDisplayName(number, java.util.Locale.ENGLISH);
+        carrier = mapper.getNameForNumber(number, java.util.Locale.ENGLISH);
 
       } catch (com.google.i18n.phonenumbers.NumberParseException e) {
         // Do nothing...
