@@ -208,13 +208,13 @@ public class PhoneUdfTest extends ClusterTest {
     new RowSetComparison(expected).verifyAndClearAll(results);
   }
 
-  /*@Test
+  @Test
   public void testGetCarrier() throws Exception {
-    String sql = "SELECT getCarrier('(410) 580-0872') FROM (VALUES(1))";
+    String sql = "SELECT getCarrier('+41 798765432') FROM (VALUES(1))";
     QueryBuilder q = client.queryBuilder().sql(sql);
     RowSet results = q.rowSet();
     results.print();
-  }*/
+  }
 
   @Test
   public void testLocation() throws Exception {

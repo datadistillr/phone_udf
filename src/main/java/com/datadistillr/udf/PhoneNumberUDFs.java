@@ -12,7 +12,6 @@ import org.apache.drill.exec.expr.holders.IntHolder;
 import org.apache.drill.exec.expr.holders.VarCharHolder;
 
 import javax.inject.Inject;
-import java.awt.datatransfer.StringSelection;
 
 public class PhoneNumberUDFs {
 
@@ -448,7 +447,6 @@ public class PhoneNumberUDFs {
     }
   }
 
-
   @FunctionTemplate(names = {"convertAlphaCharactersInPhoneNumber", "convert_alpha_characters_in_phone_number"},
     scope = FunctionTemplate.FunctionScope.SIMPLE,
     nulls = FunctionTemplate.NullHandling.NULL_IF_NULL)
@@ -588,7 +586,6 @@ public class PhoneNumberUDFs {
     @Override
     public void setup() {
       phoneUtil = com.google.i18n.phonenumbers.PhoneNumberUtil.getInstance();
-      java.net.URL mapperDataPath = this.getClass().getClassLoader().getResource("carrier/");
       mapper = com.google.i18n.phonenumbers.PhoneNumberToCarrierMapper.getInstance();
     }
 
