@@ -52,4 +52,20 @@ public class AreaCodeUdfTest extends ClusterTest {
 
     new RowSetComparison(expected).verifyAndClearAll(results);
   }
+
+  @Test
+  public void testGetCountryFromAreaCode() throws RpcException {
+    String sql = "SELECT getCountryFromAreaCode('985') AS country1, " + "getCountryFromAreaCode('   418') AS country2, " + "getCountryFromAreaCode('123*') AS country3, " +
+      "getCountryFromAreaCode('') AS country4, " + "getCountryFromAreaCode('  ') AS country5" + " FROM (VALUES(1))";
+
+    QueryBuilder q = client.queryBuilder().sql(sql);
+    RowSet results = q.rowSet();
+
+    TupleMetadata expectedSchema = new SchemaBuilder().add("country1", MinorType.VARCHAR).add("country2", MinorType.VARCHAR).add("country3", MinorType.VARCHAR).add(
+      "country4", MinorType.VARCHAR).add("country5", MinorType.VARCHAR).build();
+
+    RowSet expected = client.rowSetBuilder(expectedSchema).addRow("US", "CA", "XX", "XX", "XX").build();
+
+    new RowSetComparison(expected).verifyAndClearAll(results);
+  }
 }

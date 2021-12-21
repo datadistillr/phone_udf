@@ -730,4 +730,38 @@ public class PhoneNumberUDFs {
       buffer.setBytes(0, result.getBytes());
     }
   }
+
+  @FunctionTemplate(names = {"getCountryFromAreaCode", "get_country_from_area_code"},
+    scope = FunctionTemplate.FunctionScope.SIMPLE,
+    nulls = FunctionTemplate.NullHandling.NULL_IF_NULL)
+  public static class getCountryFromAreaCodeUDF implements DrillSimpleFunc {
+    @Param
+    VarCharHolder inputAreaCode;
+
+    @Output
+    VarCharHolder out;
+
+    @Workspace
+    com.datadistillr.udf.AreaCodeUtils areaCodeUtils;
+
+    @Inject
+    DrillBuf buffer;
+
+    @Override
+    public void setup() {
+      areaCodeUtils = new AreaCodeUtils();
+    }
+
+    @Override
+    public void eval() {
+      String areaCode = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.getStringFromVarCharHolder(inputAreaCode);
+      areaCode = areaCode.trim();
+      String result = areaCodeUtils.getCountryFromAreaCode(areaCode);
+
+      out.buffer = buffer;
+      out.start = 0;
+      out.end = result.getBytes().length;
+      buffer.setBytes(0, result.getBytes());
+    }
+  }
 }
