@@ -662,4 +662,38 @@ public class PhoneNumberUDFs {
       buffer.setBytes(0, location.getBytes());
     }
   }
+
+  @FunctionTemplate(names = {"getAreaCodeFromCity", "get_area_code_from_city"},
+    scope = FunctionTemplate.FunctionScope.SIMPLE,
+    nulls = FunctionTemplate.NullHandling.NULL_IF_NULL)
+  public static class areaCodeUDF implements DrillSimpleFunc {
+    @Param
+    VarCharHolder inputCity;
+
+    @Output
+    VarCharHolder out;
+
+    @Workspace
+    com.datadistillr.udf.AreaCodeUtils areaCodeUtils;
+
+    @Inject
+    DrillBuf buffer;
+
+    @Override
+    public void setup() {
+      areaCodeUtils = new AreaCodeUtils();
+    }
+
+    @Override
+    public void eval() {
+      String city = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.getStringFromVarCharHolder(inputCity);
+      city = city.trim();
+      String result = areaCodeUtils.getAreaCodeFromCity(city);
+
+      out.buffer = buffer;
+      out.start = 0;
+      out.end = result.getBytes().length;
+      buffer.setBytes(0, result.getBytes());
+    }
+  }
 }
