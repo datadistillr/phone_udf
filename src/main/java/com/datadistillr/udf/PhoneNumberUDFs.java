@@ -666,7 +666,7 @@ public class PhoneNumberUDFs {
   @FunctionTemplate(names = {"getAreaCodeFromCity", "get_area_code_from_city"},
     scope = FunctionTemplate.FunctionScope.SIMPLE,
     nulls = FunctionTemplate.NullHandling.NULL_IF_NULL)
-  public static class areaCodeUDF implements DrillSimpleFunc {
+  public static class getAreaCodeFromCityUDF implements DrillSimpleFunc {
     @Param
     VarCharHolder inputCity;
 
@@ -689,6 +689,40 @@ public class PhoneNumberUDFs {
       String city = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.getStringFromVarCharHolder(inputCity);
       city = city.trim();
       String result = areaCodeUtils.getAreaCodeFromCity(city);
+
+      out.buffer = buffer;
+      out.start = 0;
+      out.end = result.getBytes().length;
+      buffer.setBytes(0, result.getBytes());
+    }
+  }
+
+  @FunctionTemplate(names = {"getLatAndLong", "get_lat_and_long"},
+    scope = FunctionTemplate.FunctionScope.SIMPLE,
+    nulls = FunctionTemplate.NullHandling.NULL_IF_NULL)
+  public static class getLatAndLongUDF implements DrillSimpleFunc {
+    @Param
+    VarCharHolder inputAreaCode;
+
+    @Output
+    VarCharHolder out;
+
+    @Workspace
+    com.datadistillr.udf.AreaCodeUtils areaCodeUtils;
+
+    @Inject
+    DrillBuf buffer;
+
+    @Override
+    public void setup() {
+      areaCodeUtils = new AreaCodeUtils();
+    }
+
+    @Override
+    public void eval() {
+      String areaCode = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.getStringFromVarCharHolder(inputAreaCode);
+      areaCode = areaCode.trim();
+      String result = areaCodeUtils.getLatAndLong(areaCode);
 
       out.buffer = buffer;
       out.start = 0;
