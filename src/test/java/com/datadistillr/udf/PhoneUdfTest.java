@@ -259,7 +259,7 @@ public class PhoneUdfTest extends ClusterTest {
   @Test
   public void testGetAreaCodeFromCity() throws RpcException {
     String sql = "SELECT getAreaCodeFromCity('saginaw') AS areaCode1, " + "getAreaCodeFromCity('moose jaw  ') AS areaCode2, " + "getAreaCodeFromCity('') AS areaCode3, " +
-      "getAreaCodeFromCity('  ') AS areaCode4, " + "getAreaCodeFromCity(' auburn  ') AS areaCode5, " + "getAreaCodeFromCity('#67') AS areaCode6 " + "FROM (VALUES" +
+      "getAreaCodeFromCity('  ') AS areaCode4, " + "getAreaCodeFromCity(' sitka  ') AS areaCode5, " + "getAreaCodeFromCity('#67') AS areaCode6 " + "FROM (VALUES" +
       "(1))";
 
     QueryBuilder q = client.queryBuilder().sql(sql);
@@ -268,7 +268,7 @@ public class PhoneUdfTest extends ClusterTest {
     TupleMetadata expectedSchema = new SchemaBuilder().add("areaCode1", MinorType.VARCHAR).add("areaCode2", MinorType.VARCHAR).add("areaCode3", MinorType.VARCHAR).add(
       "areaCode4", MinorType.VARCHAR).add("areaCode5", MinorType.VARCHAR).add("areaCode6", MinorType.VARCHAR).build();
 
-    RowSet expected = client.rowSetBuilder(expectedSchema).addRow("989", "306", "XX", "XX", "315", "XX").build();
+    RowSet expected = client.rowSetBuilder(expectedSchema).addRow("989", "306", "XX", "XX", "907", "XX").build();
 
     new RowSetComparison(expected).verifyAndClearAll(results);
   }
