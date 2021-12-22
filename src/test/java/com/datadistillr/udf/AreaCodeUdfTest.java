@@ -68,4 +68,37 @@ public class AreaCodeUdfTest extends ClusterTest {
 
     new RowSetComparison(expected).verifyAndClearAll(results);
   }
+
+  @Test
+  public void testGetLatitudeFromAreaCode() throws RpcException {
+    String sql = "SELECT getLatitudeFromAreaCode('985') AS latitude1, " + "getLatitudeFromAreaCode('  418') AS latitude2, " + "getLatitudeFromAreaCode('123*') AS latitude3, " +
+      "getLatitudeFromAreaCode('') AS latitude4, " + "getLatitudeFromAreaCode('  ') AS latitude5" + " FROM (VALUES(1))";
+
+    QueryBuilder q = client.queryBuilder().sql(sql);
+    RowSet results = q.rowSet();
+
+    TupleMetadata expectedSchema = new SchemaBuilder().add("latitude1", MinorType.FLOAT8).add("latitude2", MinorType.FLOAT8).add("latitude3", MinorType.FLOAT8).add(
+      "latitude4", MinorType.FLOAT8).add("latitude5", MinorType.FLOAT8).build();
+
+    RowSet expected = client.rowSetBuilder(expectedSchema).addRow(29.979313333333, 47.215538085106, 0.0, 0.0, 0.0).build();
+
+    new RowSetComparison(expected).verifyAndClearAll(results);
+  }
+
+  @Test
+  public void testGetLongitudeFromAreaCode() throws RpcException {
+    String sql = "SELECT getLongitudeFromAreaCode('985') AS longitude1, " + "getLongitudeFromAreaCode('  418') AS longitude2, " + "getLongitudeFromAreaCode('123*') AS " +
+      "longitude3, " +
+      "getLongitudeFromAreaCode('') AS longitude4, " + "getLongitudeFromAreaCode('   ') AS longitude5" + " FROM (VALUES(1))";
+
+    QueryBuilder q = client.queryBuilder().sql(sql);
+    RowSet results = q.rowSet();
+
+    TupleMetadata expectedSchema = new SchemaBuilder().add("longitude1", MinorType.FLOAT8).add("longitude2", MinorType.FLOAT8).add("longitude3", MinorType.FLOAT8).add(
+      "longitude4", MinorType.FLOAT8).add("longitude5", MinorType.FLOAT8).build();
+
+    RowSet expected = client.rowSetBuilder(expectedSchema).addRow(-90.32739, -71.384436170213, 0.0, 0.0, 0.0).build();
+
+    new RowSetComparison(expected).verifyAndClearAll(results);
+  }
 }

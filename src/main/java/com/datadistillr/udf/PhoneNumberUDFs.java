@@ -6,10 +6,7 @@ import org.apache.drill.exec.expr.annotations.FunctionTemplate;
 import org.apache.drill.exec.expr.annotations.Output;
 import org.apache.drill.exec.expr.annotations.Param;
 import org.apache.drill.exec.expr.annotations.Workspace;
-import org.apache.drill.exec.expr.holders.BigIntHolder;
-import org.apache.drill.exec.expr.holders.BitHolder;
-import org.apache.drill.exec.expr.holders.IntHolder;
-import org.apache.drill.exec.expr.holders.VarCharHolder;
+import org.apache.drill.exec.expr.holders.*;
 
 import javax.inject.Inject;
 
@@ -762,6 +759,64 @@ public class PhoneNumberUDFs {
       out.start = 0;
       out.end = result.getBytes().length;
       buffer.setBytes(0, result.getBytes());
+    }
+  }
+
+  @FunctionTemplate(names = {"getLatitudeFromAreaCode", "get_latitude_from_area_code"},
+    scope = FunctionTemplate.FunctionScope.SIMPLE,
+    nulls = FunctionTemplate.NullHandling.NULL_IF_NULL)
+  public static class getLatitudeFromAreaCodeUDF implements DrillSimpleFunc {
+    @Param
+    VarCharHolder inputAreaCode;
+
+    @Output
+    Float8Holder out;
+
+    @Workspace
+    com.datadistillr.udf.AreaCodeUtils areaCodeUtils;
+
+    @Inject
+    DrillBuf buffer;
+
+    @Override
+    public void setup() {
+      areaCodeUtils = new AreaCodeUtils();
+    }
+
+    @Override
+    public void eval() {
+      String areaCode = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.getStringFromVarCharHolder(inputAreaCode);
+      areaCode = areaCode.trim();
+      out.value = areaCodeUtils.getLatitudeFromAreaCode(areaCode);
+    }
+  }
+
+  @FunctionTemplate(names = {"getLongitudeFromAreaCode", "get_longitude_from_area_code"},
+    scope = FunctionTemplate.FunctionScope.SIMPLE,
+    nulls = FunctionTemplate.NullHandling.NULL_IF_NULL)
+  public static class getLongitudeFromAreaCodeUDF implements DrillSimpleFunc {
+    @Param
+    VarCharHolder inputAreaCode;
+
+    @Output
+    Float8Holder out;
+
+    @Workspace
+    com.datadistillr.udf.AreaCodeUtils areaCodeUtils;
+
+    @Inject
+    DrillBuf buffer;
+
+    @Override
+    public void setup() {
+      areaCodeUtils = new AreaCodeUtils();
+    }
+
+    @Override
+    public void eval() {
+      String areaCode = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.getStringFromVarCharHolder(inputAreaCode);
+      areaCode = areaCode.trim();
+      out.value = areaCodeUtils.getLongitudeFromAreaCode(areaCode);
     }
   }
 }
