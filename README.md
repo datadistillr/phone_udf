@@ -38,6 +38,10 @@ dropped.  This function will remove any extra characters after the last legal nu
 * `getAreaCodeFromCity(<city>)`: Accepts a city and returns its area code. If city is invalid or not found, returns 'XX'.
   - INCOMPLETE
 
-* `getLatAndLong(<areaCode>)`: Accepts an area code and returns its latitude and longitude pair. If area code is invalid or not found, returns 'XX'.
+* `getCoordsFromAreaCode(<areaCode>)`: Accepts an area code and returns its latitude and longitude pair as a LIST of type DOUBLE. If area code is invalid or not found, returns a LIST containing [0.0, 0.0].
 
 * `getCountryFromAreaCode(<areaCode>)`: Accepts an area code and returns its related country. If area code is invalid or not found, returns 'XX'.
+
+* `getLatitudeFromAreaCode(<areaCode>)`: Accepts an area code and returns its latitude coordinate as type DOUBLE. If area code is invalid or not found, returns 0.0.
+
+* `getLongitudeFromAreaCode(<areaCode>)`: Accepts an area code and returns its longitude coordinate as type DOUBLE. If area code is invalid or not found, returns 0.0.
