@@ -7,8 +7,10 @@ import org.apache.drill.exec.expr.annotations.Output;
 import org.apache.drill.exec.expr.annotations.Param;
 import org.apache.drill.exec.expr.annotations.Workspace;
 import org.apache.drill.exec.expr.holders.*;
+import org.apache.drill.exec.vector.complex.writer.BaseWriter;
 
 import javax.inject.Inject;
+import java.util.ArrayList;
 
 public class PhoneNumberUDFs {
 
@@ -694,21 +696,17 @@ public class PhoneNumberUDFs {
     }
   }
 
-  @FunctionTemplate(names = {"getLatAndLong", "get_lat_and_long"},
-    scope = FunctionTemplate.FunctionScope.SIMPLE,
-    nulls = FunctionTemplate.NullHandling.NULL_IF_NULL)
-  public static class getLatAndLongUDF implements DrillSimpleFunc {
+  @FunctionTemplate(names = {"getCoordsFromAreaCode", "get_coords_from_area_code"},
+    scope = FunctionTemplate.FunctionScope.SIMPLE)
+  public static class getCoordsFromAreaCodeUDF implements DrillSimpleFunc {
     @Param
     VarCharHolder inputAreaCode;
 
     @Output
-    VarCharHolder out;
+    BaseWriter.ComplexWriter outWriter;
 
     @Workspace
     com.datadistillr.udf.AreaCodeUtils areaCodeUtils;
-
-    @Inject
-    DrillBuf buffer;
 
     @Override
     public void setup() {
@@ -719,12 +717,15 @@ public class PhoneNumberUDFs {
     public void eval() {
       String areaCode = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.getStringFromVarCharHolder(inputAreaCode);
       areaCode = areaCode.trim();
-      String result = areaCodeUtils.getLatAndLong(areaCode);
+      java.util.List result = new java.util.ArrayList();
+      result.add(areaCodeUtils.getCoordsFromAreaCode(areaCode).get(0));
+      result.add(areaCodeUtils.getCoordsFromAreaCode(areaCode).get(1));
 
-      out.buffer = buffer;
-      out.start = 0;
-      out.end = result.getBytes().length;
-      buffer.setBytes(0, result.getBytes());
+      org.apache.drill.exec.vector.complex.writer.BaseWriter.ListWriter queryListWriter = outWriter.rootAsList();
+
+      for (Object coord : result) {
+        queryListWriter.float8().writeFloat8((Double)coord);
+      }
     }
   }
 
@@ -775,9 +776,6 @@ public class PhoneNumberUDFs {
     @Workspace
     com.datadistillr.udf.AreaCodeUtils areaCodeUtils;
 
-    @Inject
-    DrillBuf buffer;
-
     @Override
     public void setup() {
       areaCodeUtils = new AreaCodeUtils();
@@ -803,9 +801,6 @@ public class PhoneNumberUDFs {
 
     @Workspace
     com.datadistillr.udf.AreaCodeUtils areaCodeUtils;
-
-    @Inject
-    DrillBuf buffer;
 
     @Override
     public void setup() {

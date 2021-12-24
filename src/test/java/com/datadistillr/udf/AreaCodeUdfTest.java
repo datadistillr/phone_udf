@@ -13,6 +13,12 @@ import org.apache.drill.test.rowSet.RowSetComparison;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.apache.drill.test.rowSet.RowSetUtilities.doubleArray;
+
+
 public class AreaCodeUdfTest extends ClusterTest {
   @BeforeClass
   public static void setup() throws Exception {
@@ -38,17 +44,31 @@ public class AreaCodeUdfTest extends ClusterTest {
   }
 
   @Test
-  public void testGetLatAndLong() throws RpcException {
-    String sql = "SELECT getLatAndLong('985') AS latAndLong1, " + "getLatAndLong('   801') AS latAndLong2, " + "getLatAndLong('123*') AS latAndLong3, " +
-      "getLatAndLong('') AS latAndLong4, " + "getLatAndLong('  ') AS latAndLong5" + " FROM (VALUES(1))";
+  public void testGetCoordsFromAreaCode() throws RpcException {
+    String sql = "SELECT getCoordsFromAreaCode('985') AS coordsFromAreaCode1, " +
+      "getCoordsFromAreaCode('   418 ') AS coordsFromAreaCode2, " +
+      "getCoordsFromAreaCode('123*') AS coordsFromAreaCode3, " +
+      "getCoordsFromAreaCode('') AS coordsFromAreaCode4, " +
+      "getCoordsFromAreaCode('   ') AS coordsFromAreaCode5 " +
+      "FROM (VALUES(1))";
 
     QueryBuilder q = client.queryBuilder().sql(sql);
     RowSet results = q.rowSet();
+    results.print();
+    TupleMetadata expectedSchema = new SchemaBuilder()
+      .addArray("coordsFromAreaCode1", MinorType.FLOAT8)
+      .addArray("coordsFromAreaCode2", MinorType.FLOAT8)
+      .addArray("coordsFromAreaCode3", MinorType.FLOAT8)
+      .addArray("coordsFromAreaCode4", MinorType.FLOAT8)
+      .addArray("coordsFromAreaCode5", MinorType.FLOAT8).build();
 
-    TupleMetadata expectedSchema = new SchemaBuilder().add("latAndLong1", MinorType.VARCHAR).add("latAndLong2", MinorType.VARCHAR).add("latAndLong3", MinorType.VARCHAR).add(
-      "latAndLong4", MinorType.VARCHAR).add("latAndLong5", MinorType.VARCHAR).build();
-
-    RowSet expected = client.rowSetBuilder(expectedSchema).addRow("29.979313333333,-90.32739", "40.653856428571,-111.88019214286", "XX", "XX", "XX").build();
+    RowSet expected = client.rowSetBuilder(expectedSchema)
+      .addRow(doubleArray(29.979313333333, -90.32739),
+        doubleArray(47.215538085106, -71.384436170213),
+        doubleArray(0.0, 0.0),
+        doubleArray(0.0, 0.0),
+        doubleArray(0.0, 0.0))
+      .build();
 
     new RowSetComparison(expected).verifyAndClearAll(results);
   }

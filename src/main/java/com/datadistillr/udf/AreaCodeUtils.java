@@ -1,11 +1,14 @@
 package com.datadistillr.udf;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 
 public class AreaCodeUtils {
 
   private static final String UNKNOWN = "XX";
+  private static final Double DOUBLE_UNKNOWN = 0.0;
 
   private static final HashMap<String, String> areaCodeFromCity = new HashMap<String, String>() {{
     put("winnipeg", "204");
@@ -3450,17 +3453,7 @@ public class AreaCodeUtils {
     put("north charleston", "854");
     put("summerville", "854");
   }};
-  /*
-  private static final HashMap<Double, Double> latAndLongHashMapWithin = new HashMap<Double, Double>() {{
-    put(51.203033636364,-98.729934545455);
-    put(43.233831176471,-81.230922352941);
-  }};
-  private static final HashMap<String, HashMap> latAndLongFromAreaCodeWithinHashMap = new HashMap<String, HashMap>() {{
 
-    put("204", latAndLongHashMapWithin);
-  }};
-
-   */
   private static final HashMap<String, String> latAndLongFromAreaCode = new HashMap<String, String>() {{
     put("204", "51.203033636364,-98.729934545455");
     put("226", "43.233831176471,-81.230922352941");
@@ -4826,13 +4819,18 @@ public class AreaCodeUtils {
     return areaCodeFromCity.getOrDefault(city, UNKNOWN);
   }
 
-  public String getLatAndLong(String areaCode) {
+  public List<Double> getCoordsFromAreaCode(String areaCode) {
+    List<Double> result = new ArrayList<Double>();
     if (areaCode == null) {
-      return UNKNOWN;
+      result.add(DOUBLE_UNKNOWN);
+      result.add(DOUBLE_UNKNOWN);
+      return result;
     }
     areaCode = areaCode.trim();
 
-    return latAndLongFromAreaCode.getOrDefault(areaCode, UNKNOWN);
+    result.add(latitudeFromAreaCode.getOrDefault(areaCode, DOUBLE_UNKNOWN));
+    result.add(longitudeFromAreaCode.getOrDefault(areaCode, DOUBLE_UNKNOWN));
+    return result;
   }
 
   public String getCountryFromAreaCode(String areaCode) {
@@ -4846,19 +4844,19 @@ public class AreaCodeUtils {
 
   public Double getLatitudeFromAreaCode(String areaCode) {
     if (areaCode == null) {
-      return 0.0;
+      return DOUBLE_UNKNOWN;
     }
     areaCode = areaCode.trim();
 
-    return latitudeFromAreaCode.getOrDefault(areaCode, 0.0);
+    return latitudeFromAreaCode.getOrDefault(areaCode, DOUBLE_UNKNOWN);
   }
 
   public Double getLongitudeFromAreaCode(String areaCode) {
     if (areaCode == null) {
-      return 0.0;
+      return DOUBLE_UNKNOWN;
     }
     areaCode = areaCode.trim();
 
-    return longitudeFromAreaCode.getOrDefault(areaCode, 0.0);
+    return longitudeFromAreaCode.getOrDefault(areaCode, DOUBLE_UNKNOWN);
   }
 }
