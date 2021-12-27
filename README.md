@@ -45,3 +45,5 @@ dropped.  This function will remove any extra characters after the last legal nu
 * `getLatitudeFromAreaCode(<areaCode>)`: Accepts an area code and returns its latitude coordinate as type DOUBLE. If area code is invalid or not found, returns 0.0.
 
 * `getLongitudeFromAreaCode(<areaCode>)`: Accepts an area code and returns its longitude coordinate as type DOUBLE. If area code is invalid or not found, returns 0.0.
+
+* `getBinaryFromAreaCode(<areaCode>)`: Accepts an area code and returns the binary point for its latitude/longitude coordinate pair. If area code is invalid or not found, returns an empty binary element.
