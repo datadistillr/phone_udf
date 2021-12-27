@@ -16,6 +16,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.apache.drill.test.rowSet.RowSetUtilities.binArray;
 import static org.apache.drill.test.rowSet.RowSetUtilities.doubleArray;
 
 
@@ -118,6 +119,38 @@ public class AreaCodeUdfTest extends ClusterTest {
       "longitude4", MinorType.FLOAT8).add("longitude5", MinorType.FLOAT8).build();
 
     RowSet expected = client.rowSetBuilder(expectedSchema).addRow(-90.32739, -71.384436170213, 0.0, 0.0, 0.0).build();
+
+    new RowSetComparison(expected).verifyAndClearAll(results);
+  }
+
+  @Test
+  public void testGetBinaryFromAreaCode() throws RpcException {
+    String sql = "SELECT getBinaryFromAreaCode('985') AS binaryFromAreaCode1, " + "getBinaryFromAreaCode('   418  ') AS binaryFromAreaCode2, " +
+      "getBinaryFromAreaCode('123*') AS binaryFromAreaCode3, " + "getBinaryFromAreaCode('') AS binaryFromAreaCode4, " +
+      "getBinaryFromAreaCode('  ') AS binaryFromAreaCode5 " +
+      "FROM (VALUES(1))";
+
+    QueryBuilder q = client.queryBuilder().sql(sql);
+    RowSet results = q.rowSet();
+    results.print();
+    System.out.println(results);
+    TupleMetadata expectedSchema = new SchemaBuilder()
+      .add("binaryFromAreaCode1", MinorType.VARBINARY)
+      .add("binaryFromAreaCode2", MinorType.VARBINARY)
+      .add("binaryFromAreaCode3", MinorType.VARBINARY)
+      .add("binaryFromAreaCode4", MinorType.VARBINARY)
+      .add("binaryFromAreaCode5", MinorType.VARBINARY)
+      .build();
+
+    byte[] binFromAreaCode1 = "\\x01\\x01\\x00\\x00\\x00e\\xC2/\\xF5\\xF3\\x94V\\xC0\\xB53SG\\xB4\\xFA=@".getBytes();
+    byte[] binFromAreaCode2 = "\\x01\\x01\\x00\\x00\\x00\\xB7\\x9D*\\x9A\\x9A\\xD8Q\\xC0OI\\x81\\xC0\\x96\\x9BG@".getBytes();
+    byte[] binFromAreaCode3 = "".getBytes();
+    byte[] binFromAreaCode4 = "".getBytes();
+    byte[] binFromAreaCode5 = "".getBytes();
+
+    RowSet expected = client.rowSetBuilder(expectedSchema)
+      .addRow(binArray(binFromAreaCode1, binFromAreaCode2, binFromAreaCode3, binFromAreaCode4, binFromAreaCode5))
+      .build();
 
     new RowSetComparison(expected).verifyAndClearAll(results);
   }

@@ -814,4 +814,44 @@ public class PhoneNumberUDFs {
       out.value = areaCodeUtils.getLongitudeFromAreaCode(areaCode);
     }
   }
+
+  @FunctionTemplate(names = {"getBinaryFromAreaCode", "get_binary_from_area_code"},
+    scope = FunctionTemplate.FunctionScope.SIMPLE,
+    nulls = FunctionTemplate.NullHandling.NULL_IF_NULL)
+  public static class getBinaryFromAreaCodeUDF implements DrillSimpleFunc {
+    @Param
+    VarCharHolder inputAreaCode;
+
+    @Output
+    VarBinaryHolder out;
+
+    @Workspace
+    com.datadistillr.udf.AreaCodeUtils areaCodeUtils;
+
+    @Inject
+    DrillBuf buffer;
+
+    @Override
+    public void setup() {
+      areaCodeUtils = new AreaCodeUtils();
+    }
+
+    @Override
+    public void eval() {
+      String areaCode = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.getStringFromVarCharHolder(inputAreaCode);
+      areaCode = areaCode.trim();
+
+      Double lon = (Double) areaCodeUtils.getCoordsFromAreaCode(areaCode).get(1);
+      Double lat = (Double) areaCodeUtils.getCoordsFromAreaCode(areaCode).get(0);;
+
+      com.esri.core.geometry.ogc.OGCPoint point = new com.esri.core.geometry.ogc.OGCPoint(
+        new com.esri.core.geometry.Point(lon, lat), com.esri.core.geometry.SpatialReference.create(4326));
+
+      java.nio.ByteBuffer pointBytes = point.asBinary();
+      out.buffer = buffer;
+      out.start = 0;
+      out.end = pointBytes.remaining();
+      buffer.setBytes(0, pointBytes);
+    }
+  }
 }
