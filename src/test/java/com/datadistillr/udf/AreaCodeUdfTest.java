@@ -16,8 +16,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.apache.drill.test.rowSet.RowSetUtilities.binArray;
-import static org.apache.drill.test.rowSet.RowSetUtilities.doubleArray;
+import static org.apache.drill.test.rowSet.RowSetUtilities.*;
 
 
 public class AreaCodeUdfTest extends ClusterTest {
@@ -28,18 +27,44 @@ public class AreaCodeUdfTest extends ClusterTest {
   }
 
   @Test
-  public void testGetAreaCodeFromCity() throws RpcException {
-    String sql = "SELECT getAreaCodeFromCity('saginaw') AS areaCode1, " + "getAreaCodeFromCity('moose jaw  ') AS areaCode2, " + "getAreaCodeFromCity('') AS areaCode3, " +
-      "getAreaCodeFromCity('  ') AS areaCode4, " + "getAreaCodeFromCity(' sitka  ') AS areaCode5, " + "getAreaCodeFromCity('#67') AS areaCode6 " + "FROM (VALUES" +
+  public void testGetAreaCodesFromCity() throws RpcException {
+    String sql = "SELECT getAreaCodesFromCity('saginaw') AS areaCodes1, " + "getAreaCodesFromCity(' milton  ') AS areaCodes2, " + "getAreaCodesFromCity('') AS areaCodes3, " +
+      "getAreaCodesFromCity('  ') AS areaCodes4, " + "getAreaCodesFromCity(' kansas city  ') AS areaCodes5, " + "getAreaCodesFromCity('#67') AS areaCodes6 " + "FROM (VALUES" +
       "(1))";
-
+    /*
+    String sql = "SELECT getAreaCodesFromCity('saginaw') AS areaCodes1, " + "getAreaCodesFromCity(' milton  ') AS areaCodes2, " +
+      "getAreaCodesFromCity(' kansas city  ') AS areaCodes5 " + "FROM (VALUES" + "(1))";
+ */
     QueryBuilder q = client.queryBuilder().sql(sql);
     RowSet results = q.rowSet();
 
-    TupleMetadata expectedSchema = new SchemaBuilder().add("areaCode1", MinorType.VARCHAR).add("areaCode2", MinorType.VARCHAR).add("areaCode3", MinorType.VARCHAR).add(
-      "areaCode4", MinorType.VARCHAR).add("areaCode5", MinorType.VARCHAR).add("areaCode6", MinorType.VARCHAR).build();
+    TupleMetadata expectedSchema = new SchemaBuilder()
+      .addArray("areaCodes1", MinorType.VARCHAR)
+      .addArray("areaCodes2", MinorType.VARCHAR)
+      .addArray("areaCodes3", MinorType.VARCHAR)
+      .addArray("areaCodes4", MinorType.VARCHAR)
+      .addArray("areaCodes5", MinorType.VARCHAR)
+      .addArray("areaCodes6", MinorType.VARCHAR)
+      .build();
 
-    RowSet expected = client.rowSetBuilder(expectedSchema).addRow("989", "306", "XX", "XX", "907", "XX").build();
+    //each list of area codes must be in ascending order
+    RowSet expected = client.rowSetBuilder(expectedSchema)
+      .addRow(strArray("989"),
+        strArray("289", "905", "617", "857"),
+        strArray(""),
+        strArray(""),
+        strArray("816", "913"),
+        strArray("")).build();
+
+
+
+    //each list of area codes must be in ascending order
+    /*
+    RowSet expected = client.rowSetBuilder(expectedSchema)
+      .addRow(strArray("989"),
+        strArray("289", "617", "857", "905"),
+        strArray("816", "913")).build();
+*/
 
     new RowSetComparison(expected).verifyAndClearAll(results);
   }
@@ -55,7 +80,7 @@ public class AreaCodeUdfTest extends ClusterTest {
 
     QueryBuilder q = client.queryBuilder().sql(sql);
     RowSet results = q.rowSet();
-    results.print();
+
     TupleMetadata expectedSchema = new SchemaBuilder()
       .addArray("coordsFromAreaCode1", MinorType.FLOAT8)
       .addArray("coordsFromAreaCode2", MinorType.FLOAT8)
@@ -132,7 +157,7 @@ public class AreaCodeUdfTest extends ClusterTest {
 
     QueryBuilder q = client.queryBuilder().sql(sql);
     RowSet results = q.rowSet();
-    results.print();
+
     System.out.println(results);
     TupleMetadata expectedSchema = new SchemaBuilder()
       .add("binaryFromAreaCode1", MinorType.VARBINARY)

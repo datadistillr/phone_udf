@@ -662,15 +662,14 @@ public class PhoneNumberUDFs {
     }
   }
 
-  @FunctionTemplate(names = {"getAreaCodeFromCity", "get_area_code_from_city"},
-    scope = FunctionTemplate.FunctionScope.SIMPLE,
-    nulls = FunctionTemplate.NullHandling.NULL_IF_NULL)
-  public static class getAreaCodeFromCityUDF implements DrillSimpleFunc {
+  @FunctionTemplate(names = {"getAreaCodesFromCity", "get_area_codes_from_city"},
+    scope = FunctionTemplate.FunctionScope.SIMPLE)
+  public static class getAreaCodesFromCityUDF implements DrillSimpleFunc {
     @Param
     VarCharHolder inputCity;
 
     @Output
-    VarCharHolder out;
+    BaseWriter.ComplexWriter outWriter;
 
     @Workspace
     com.datadistillr.udf.AreaCodeUtils areaCodeUtils;
@@ -687,12 +686,26 @@ public class PhoneNumberUDFs {
     public void eval() {
       String city = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.getStringFromVarCharHolder(inputCity);
       city = city.trim();
-      String result = areaCodeUtils.getAreaCodeFromCity(city);
+      java.util.List result = new java.util.ArrayList();
+/*
+      if (city == null) {
+        result.add("XX");
+        result.add("ZZ");
+      }
+ */
 
-      out.buffer = buffer;
-      out.start = 0;
-      out.end = result.getBytes().length;
-      buffer.setBytes(0, result.getBytes());
+      for (String areaCode: areaCodeUtils.getAreaCodesFromCity(city)) {
+        result.add(areaCode);
+      }
+
+      java.util.Collections.sort(result);
+
+      org.apache.drill.exec.vector.complex.writer.BaseWriter.ListWriter queryListWriter = outWriter.rootAsList();
+
+      for (Object areaCode : result) {
+        buffer.setBytes(0, areaCode.toString().getBytes());
+        queryListWriter.varChar().writeVarChar(0, areaCode.toString().getBytes().length, buffer);
+      }
     }
   }
 
