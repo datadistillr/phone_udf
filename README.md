@@ -35,8 +35,9 @@ For most functions, there are two versions, one with a region code and one witho
 * `truncatePhoneNumber(<phoneNumber>)`: In some countries, extra numbers are ignored, so you can have a legitimate phone number like `1-800-MICROSOFT` where the extra numbers are
 dropped.  This function will remove any extra characters after the last legal number in a phone number.
 
-* `getAreaCodeFromCity(<city>)`: Accepts a city and returns its area code. If city is invalid or not found, returns 'XX'.
-  - INCOMPLETE
+* `getAreaCodesFromCity(<city>)`: Accepts a city and returns its area code(s) as a LIST. If city is invalid or not found, returns an empty LIST.
+
+* `getCitiesFromAreaCode(<areaCode>)`: Accepts an area code and returns its related cities as a LIST. If area code is invalid or not found, returns an empty LIST.
 
 * `getCoordsFromAreaCode(<areaCode>)`: Accepts an area code and returns its latitude and longitude pair as a LIST of type DOUBLE. If area code is invalid or not found, returns a LIST containing [0.0, 0.0].
 
