@@ -57,6 +57,33 @@ public class AreaCodeUdfTest extends ClusterTest {
   }
 
   @Test
+  public void testGetCitiesFromAreaCode() throws RpcException {
+    String sql = "SELECT getCitiesFromAreaCode('763') AS cities1, " + "getCitiesFromAreaCode(' 302  ') AS cities2, " + "getCitiesFromAreaCode('') AS cities3, " +
+      "getCitiesFromAreaCode('  ') AS cities4, " + "getCitiesFromAreaCode('#67') AS cities5 " + "FROM (VALUES(1))";
+
+    QueryBuilder q = client.queryBuilder().sql(sql);
+    RowSet results = q.rowSet();
+
+    TupleMetadata expectedSchema = new SchemaBuilder()
+      .addArray("cities1", MinorType.VARCHAR)
+      .addArray("cities2", MinorType.VARCHAR)
+      .addArray("cities3", MinorType.VARCHAR)
+      .addArray("cities4", MinorType.VARCHAR)
+      .addArray("cities5", MinorType.VARCHAR)
+      .build();
+
+    //each list of area codes must be in ascending order
+    RowSet expected = client.rowSetBuilder(expectedSchema)
+      .addRow(strArray("Blaine", "Brooklyn Center", "Brooklyn Park", "Champlin", "Fridley", "Maple Grove", "New Hope", "Plymouth", "West Coon Rapids"),
+        strArray("Dover", "Newark", "Wilmington"),
+        strArray(""),
+        strArray(""),
+        strArray("")).build();
+
+    new RowSetComparison(expected).verifyAndClearAll(results);
+  }
+
+  @Test
   public void testGetCoordsFromAreaCode() throws RpcException {
     String sql = "SELECT getCoordsFromAreaCode('985') AS coordsFromAreaCode1, " +
       "getCoordsFromAreaCode('   418 ') AS coordsFromAreaCode2, " +

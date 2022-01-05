@@ -708,6 +708,47 @@ public class PhoneNumberUDFs {
     }
   }
 
+  @FunctionTemplate(names = {"getCitiesFromAreaCode", "get_cities_from_area_code"},
+    scope = FunctionTemplate.FunctionScope.SIMPLE)
+  public static class getCitiesFromAreaCodeUDF implements DrillSimpleFunc {
+    @Param
+    NullableVarCharHolder inputAreaCode;
+
+    @Output
+    BaseWriter.ComplexWriter outWriter;
+
+    @Workspace
+    com.datadistillr.udf.AreaCodeUtils areaCodeUtils;
+
+    @Inject
+    DrillBuf buffer;
+
+    @Override
+    public void setup() {
+      areaCodeUtils = new AreaCodeUtils();
+    }
+
+    @Override
+    public void eval() {
+      java.util.List result = new java.util.ArrayList();
+      String areaCode = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.getStringFromVarCharHolder(inputAreaCode);
+
+      for (String city: areaCodeUtils.getCitiesFromAreaCode(areaCode)) {
+        result.add(city);
+      }
+
+      java.util.Collections.sort(result);
+
+      org.apache.drill.exec.vector.complex.writer.BaseWriter.ListWriter queryListWriter = outWriter.rootAsList();
+      queryListWriter.startList();
+      for (Object city : result) {
+        buffer.setBytes(0, city.toString().getBytes());
+        queryListWriter.varChar().writeVarChar(0, city.toString().getBytes().length, buffer);
+      }
+      queryListWriter.endList();
+    }
+  }
+
   @FunctionTemplate(names = {"getCoordsFromAreaCode", "get_coords_from_area_code"},
     scope = FunctionTemplate.FunctionScope.SIMPLE)
   public static class getCoordsFromAreaCodeUDF implements DrillSimpleFunc {
