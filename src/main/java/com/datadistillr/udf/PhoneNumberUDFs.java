@@ -6,11 +6,16 @@ import org.apache.drill.exec.expr.annotations.FunctionTemplate;
 import org.apache.drill.exec.expr.annotations.Output;
 import org.apache.drill.exec.expr.annotations.Param;
 import org.apache.drill.exec.expr.annotations.Workspace;
-import org.apache.drill.exec.expr.holders.*;
+import org.apache.drill.exec.expr.holders.BigIntHolder;
+import org.apache.drill.exec.expr.holders.BitHolder;
+import org.apache.drill.exec.expr.holders.Float8Holder;
+import org.apache.drill.exec.expr.holders.IntHolder;
+import org.apache.drill.exec.expr.holders.NullableVarCharHolder;
+import org.apache.drill.exec.expr.holders.VarBinaryHolder;
+import org.apache.drill.exec.expr.holders.VarCharHolder;
 import org.apache.drill.exec.vector.complex.writer.BaseWriter;
 
 import javax.inject.Inject;
-import java.util.ArrayList;
 
 public class PhoneNumberUDFs {
 
@@ -666,7 +671,7 @@ public class PhoneNumberUDFs {
     scope = FunctionTemplate.FunctionScope.SIMPLE)
   public static class getAreaCodesFromCityUDF implements DrillSimpleFunc {
     @Param
-    VarCharHolder inputCity;
+    NullableVarCharHolder inputCity;
 
     @Output
     BaseWriter.ComplexWriter outWriter;
@@ -684,15 +689,8 @@ public class PhoneNumberUDFs {
 
     @Override
     public void eval() {
-      String city = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.getStringFromVarCharHolder(inputCity);
-      city = city.trim();
       java.util.List result = new java.util.ArrayList();
-/*
-      if (city == null) {
-        result.add("XX");
-        result.add("ZZ");
-      }
- */
+      String city = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.getStringFromVarCharHolder(inputCity);
 
       for (String areaCode: areaCodeUtils.getAreaCodesFromCity(city)) {
         result.add(areaCode);
@@ -701,11 +699,12 @@ public class PhoneNumberUDFs {
       java.util.Collections.sort(result);
 
       org.apache.drill.exec.vector.complex.writer.BaseWriter.ListWriter queryListWriter = outWriter.rootAsList();
-
+      queryListWriter.startList();
       for (Object areaCode : result) {
         buffer.setBytes(0, areaCode.toString().getBytes());
         queryListWriter.varChar().writeVarChar(0, areaCode.toString().getBytes().length, buffer);
       }
+      queryListWriter.endList();
     }
   }
 

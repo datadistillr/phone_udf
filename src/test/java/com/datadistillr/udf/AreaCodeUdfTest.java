@@ -31,10 +31,7 @@ public class AreaCodeUdfTest extends ClusterTest {
     String sql = "SELECT getAreaCodesFromCity('saginaw') AS areaCodes1, " + "getAreaCodesFromCity(' milton  ') AS areaCodes2, " + "getAreaCodesFromCity('') AS areaCodes3, " +
       "getAreaCodesFromCity('  ') AS areaCodes4, " + "getAreaCodesFromCity(' kansas city  ') AS areaCodes5, " + "getAreaCodesFromCity('#67') AS areaCodes6 " + "FROM (VALUES" +
       "(1))";
-    /*
-    String sql = "SELECT getAreaCodesFromCity('saginaw') AS areaCodes1, " + "getAreaCodesFromCity(' milton  ') AS areaCodes2, " +
-      "getAreaCodesFromCity(' kansas city  ') AS areaCodes5 " + "FROM (VALUES" + "(1))";
- */
+
     QueryBuilder q = client.queryBuilder().sql(sql);
     RowSet results = q.rowSet();
 
@@ -50,21 +47,11 @@ public class AreaCodeUdfTest extends ClusterTest {
     //each list of area codes must be in ascending order
     RowSet expected = client.rowSetBuilder(expectedSchema)
       .addRow(strArray("989"),
-        strArray("289", "905", "617", "857"),
+        strArray("289", "617", "857", "905"),
         strArray(""),
         strArray(""),
         strArray("816", "913"),
         strArray("")).build();
-
-
-
-    //each list of area codes must be in ascending order
-    /*
-    RowSet expected = client.rowSetBuilder(expectedSchema)
-      .addRow(strArray("989"),
-        strArray("289", "617", "857", "905"),
-        strArray("816", "913")).build();
-*/
 
     new RowSetComparison(expected).verifyAndClearAll(results);
   }

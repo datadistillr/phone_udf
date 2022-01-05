@@ -4484,6 +4484,9 @@ public class AreaCodeUtils {
 
     fillMultiMap(areaCodesFromCity);
 
+    if(!areaCodesFromCity.containsKey(city)) {
+      return MAP_UNKNOWN.get("XX");
+    }
     return areaCodesFromCity.get(city);
   }
 
