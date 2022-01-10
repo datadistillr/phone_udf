@@ -9,13 +9,14 @@ For most functions, there are two versions, one with a region code and one witho
 
 * `formatPhoneNumber(<phoneNumber>, <format>)`:  Accepts a phone number and formats it in one of four possible formats which are: `e164`, `national`, `international`, `rfc3966`.
 
-* `getCarrier(<phoneNumber>)`: Returns the carrier of a given number if available.
+* `getCarrierFromPhoneNumber(<phoneNumber>)`: Returns the carrier of a given number if available.
 
-* `getCountryCode(<phoneNumber>)`: Accepts a phone number and returns the country code for that number.  IE: 1 for US, 49 for Germany. It does not matter if the user included
+* `getCountryCodeFromPhoneNumber(<phoneNumber>)`: Accepts a phone number and returns the country code for that number.  IE: 1 for US, 49 for Germany. It does not matter if the 
+  user included
   the country code or not in the input.  This function should not be used for geo-location as some countries have multiple country codes and some country codes are shared by
   multiple countries.
 
-* `getLeadingZeroes(<phoneNumber>)`:  Returns the number of leading zeros in a phone number.
+* `getLeadingZeroesFromPhoneNumber(<phoneNumber>)`:  Returns the number of leading zeros in a phone number.
 
 * `geoLocatePhoneNumber(<phoneNumber>)`:  Attempts to geolocate the phone number. If the number is not valid, will return `Invalid Number`.  The function will provide as much
   detail as it has, so you might just get a country name or you might get city and country.

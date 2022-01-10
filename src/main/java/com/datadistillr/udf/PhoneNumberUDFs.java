@@ -180,10 +180,10 @@ public class PhoneNumberUDFs {
     }
   }
 
-  @FunctionTemplate(names = {"get_country_code", "getCountryCode"},
+  @FunctionTemplate(names = {"get_country_code_from_phone_number", "getCountryCodeFromPhoneNumber"},
     scope = FunctionTemplate.FunctionScope.SIMPLE,
     nulls = FunctionTemplate.NullHandling.NULL_IF_NULL)
-  public static class getCountryCode implements DrillSimpleFunc {
+  public static class getCountryCodeFromPhoneNumber implements DrillSimpleFunc {
 
     @Param
     VarCharHolder inputPhoneNumber;
@@ -247,10 +247,10 @@ public class PhoneNumberUDFs {
   }
 
 
-  @FunctionTemplate(names = {"get_leading_zeroes", "getLeadingZeroes"},
+  @FunctionTemplate(names = {"get_leading_zeroes_from_phone_number", "getLeadingZeroesFromPhoneNumber"},
     scope = FunctionTemplate.FunctionScope.SIMPLE,
     nulls = FunctionTemplate.NullHandling.NULL_IF_NULL)
-  public static class getLeadingZeroes implements DrillSimpleFunc {
+  public static class getLeadingZeroesFromPhoneNumber implements DrillSimpleFunc {
 
     @Param
     VarCharHolder inputPhoneNumber;
@@ -568,10 +568,10 @@ public class PhoneNumberUDFs {
     }
   }
 
-  @FunctionTemplate(names = {"getCarrier", "get_carrier"},
+  @FunctionTemplate(names = {"getCarrierFromPhoneNumber", "get_carrier_from_phone_number"},
     scope = FunctionTemplate.FunctionScope.SIMPLE,
     nulls = FunctionTemplate.NullHandling.NULL_IF_NULL)
-  public static class getCarrierUDF implements DrillSimpleFunc {
+  public static class getCarrierFromPhoneNumberUDF implements DrillSimpleFunc {
     @Param
     VarCharHolder inputPhoneNumber;
 
