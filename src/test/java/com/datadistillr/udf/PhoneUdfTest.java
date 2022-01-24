@@ -210,9 +210,9 @@ public class PhoneUdfTest extends ClusterTest {
 
   @Test
   public void testGetCarrier() throws Exception {
-    String sql = "SELECT getCarrier('+41 798765432') as num1, " +
-      "getCarrier('+972 2-569-5695') as num2, " +
-      "getCarrier('+33 6 10 22 02 77') as num3 " +
+    String sql = "SELECT getCarrierFromPhoneNumber('+41 798765432') as num1, " +
+      "getCarrierFromPhoneNumber('+972 2-569-5695') as num2, " +
+      "getCarrierFromPhoneNumber('+33 6 10 22 02 77') as num3 " +
       "FROM (VALUES(1))";
 
     QueryBuilder q = client.queryBuilder().sql(sql);
