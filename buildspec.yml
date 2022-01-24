@@ -1,0 +1,12 @@
+version: 0.2
+phases:
+  build:
+    commands:
+      - export UDF_VERSION=`mvn help:evaluate -Dexpression=project.version -q -DforceStdout`
+      - export UDF_ID=`mvn help:evaluate -Dexpression=project.artifactId -q -DforceStdout`
+      - export UDF_GROUP_ID=`mvn help:evaluate -Dexpression=project.groupId -q -DforceStdout`
+      - export UDF_JAR_PATH="./target/$UDF_ID-$UDF_VERSION.jar"
+      - export UDF_SOURCES_JAR_PATH="./target/$UDF_ID-$UDF_VERSION-sources.jar"
+      - export CODEARTIFACT_AUTH_TOKEN=`aws codeartifact get-authorization-token --domain datadistillr --domain-owner 690685867975 --query authorizationToken --output text`
+      - mvn clean package
+      - mvn deploy:deploy-file -DgroupId=$UDF_GROUP_ID -DartifactId=$UDF_ID -Dversion=$UDF_VERSION -Dfile=$UDF_JAR_PATH -Dsources=$UDF_SOURCES_JAR_PATH -Dpackaging=jar -DrepositoryId=datadistillr-datadistillr-mvn-1 -Durl=https://datadistillr-690685867975.d.codeartifact.us-east-1.amazonaws.com/maven/datadistillr-mvn-1/ -s ./settings.xml
