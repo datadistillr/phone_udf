@@ -868,10 +868,10 @@ public class PhoneNumberUDFs {
     }
   }
 
-  @FunctionTemplate(names = {"getBinaryFromAreaCode", "get_binary_from_area_code"},
+  @FunctionTemplate(names = {"getGeoPointFromAreaCode", "get_geo_point_from_area_code"},
     scope = FunctionTemplate.FunctionScope.SIMPLE,
     nulls = FunctionTemplate.NullHandling.NULL_IF_NULL)
-  public static class getBinaryFromAreaCodeUDF implements DrillSimpleFunc {
+  public static class getGeoPointFromAreaCodeUDF implements DrillSimpleFunc {
     @Param
     VarCharHolder inputAreaCode;
 
