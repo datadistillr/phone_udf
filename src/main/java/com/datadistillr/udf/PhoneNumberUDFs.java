@@ -8,8 +8,12 @@ import org.apache.drill.exec.expr.annotations.Param;
 import org.apache.drill.exec.expr.annotations.Workspace;
 import org.apache.drill.exec.expr.holders.BigIntHolder;
 import org.apache.drill.exec.expr.holders.BitHolder;
+import org.apache.drill.exec.expr.holders.Float8Holder;
 import org.apache.drill.exec.expr.holders.IntHolder;
+import org.apache.drill.exec.expr.holders.NullableVarCharHolder;
+import org.apache.drill.exec.expr.holders.VarBinaryHolder;
 import org.apache.drill.exec.expr.holders.VarCharHolder;
+import org.apache.drill.exec.vector.complex.writer.BaseWriter;
 
 import javax.inject.Inject;
 
@@ -660,6 +664,247 @@ public class PhoneNumberUDFs {
       out.start = 0;
       out.end = location.getBytes().length;
       buffer.setBytes(0, location.getBytes());
+    }
+  }
+
+  @FunctionTemplate(names = {"getAreaCodesFromCity", "get_area_codes_from_city"},
+    scope = FunctionTemplate.FunctionScope.SIMPLE)
+  public static class getAreaCodesFromCityUDF implements DrillSimpleFunc {
+    @Param
+    NullableVarCharHolder inputCity;
+
+    @Output
+    BaseWriter.ComplexWriter outWriter;
+
+    @Workspace
+    com.datadistillr.udf.AreaCodeUtils areaCodeUtils;
+
+    @Inject
+    DrillBuf buffer;
+
+    @Override
+    public void setup() {
+      areaCodeUtils = new AreaCodeUtils();
+    }
+
+    @Override
+    public void eval() {
+      java.util.List result = new java.util.ArrayList();
+      String city = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.getStringFromVarCharHolder(inputCity);
+
+      for (String areaCode: areaCodeUtils.getAreaCodesFromCity(city)) {
+        result.add(areaCode);
+      }
+
+      java.util.Collections.sort(result);
+
+      org.apache.drill.exec.vector.complex.writer.BaseWriter.ListWriter queryListWriter = outWriter.rootAsList();
+      queryListWriter.startList();
+      for (Object areaCode : result) {
+        buffer.setBytes(0, areaCode.toString().getBytes());
+        queryListWriter.varChar().writeVarChar(0, areaCode.toString().getBytes().length, buffer);
+      }
+      queryListWriter.endList();
+    }
+  }
+
+  @FunctionTemplate(names = {"getCitiesFromAreaCode", "get_cities_from_area_code"},
+    scope = FunctionTemplate.FunctionScope.SIMPLE)
+  public static class getCitiesFromAreaCodeUDF implements DrillSimpleFunc {
+    @Param
+    NullableVarCharHolder inputAreaCode;
+
+    @Output
+    BaseWriter.ComplexWriter outWriter;
+
+    @Workspace
+    com.datadistillr.udf.AreaCodeUtils areaCodeUtils;
+
+    @Inject
+    DrillBuf buffer;
+
+    @Override
+    public void setup() {
+      areaCodeUtils = new AreaCodeUtils();
+    }
+
+    @Override
+    public void eval() {
+      java.util.List result = new java.util.ArrayList();
+      String areaCode = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.getStringFromVarCharHolder(inputAreaCode);
+
+      for (String city: areaCodeUtils.getCitiesFromAreaCode(areaCode)) {
+        result.add(city);
+      }
+
+      java.util.Collections.sort(result);
+
+      org.apache.drill.exec.vector.complex.writer.BaseWriter.ListWriter queryListWriter = outWriter.rootAsList();
+      queryListWriter.startList();
+      for (Object city : result) {
+        buffer.setBytes(0, city.toString().getBytes());
+        queryListWriter.varChar().writeVarChar(0, city.toString().getBytes().length, buffer);
+      }
+      queryListWriter.endList();
+    }
+  }
+
+  @FunctionTemplate(names = {"getCoordsFromAreaCode", "get_coords_from_area_code"},
+    scope = FunctionTemplate.FunctionScope.SIMPLE)
+  public static class getCoordsFromAreaCodeUDF implements DrillSimpleFunc {
+    @Param
+    VarCharHolder inputAreaCode;
+
+    @Output
+    BaseWriter.ComplexWriter outWriter;
+
+    @Workspace
+    com.datadistillr.udf.AreaCodeUtils areaCodeUtils;
+
+    @Override
+    public void setup() {
+      areaCodeUtils = new AreaCodeUtils();
+    }
+
+    @Override
+    public void eval() {
+      String areaCode = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.getStringFromVarCharHolder(inputAreaCode);
+      areaCode = areaCode.trim();
+      java.util.List result = new java.util.ArrayList();
+      result.add(areaCodeUtils.getCoordsFromAreaCode(areaCode).get(0));
+      result.add(areaCodeUtils.getCoordsFromAreaCode(areaCode).get(1));
+
+      org.apache.drill.exec.vector.complex.writer.BaseWriter.ListWriter queryListWriter = outWriter.rootAsList();
+
+      for (Object coord : result) {
+        queryListWriter.float8().writeFloat8((Double)coord);
+      }
+    }
+  }
+
+  @FunctionTemplate(names = {"getCountryFromAreaCode", "get_country_from_area_code"},
+    scope = FunctionTemplate.FunctionScope.SIMPLE,
+    nulls = FunctionTemplate.NullHandling.NULL_IF_NULL)
+  public static class getCountryFromAreaCodeUDF implements DrillSimpleFunc {
+    @Param
+    VarCharHolder inputAreaCode;
+
+    @Output
+    VarCharHolder out;
+
+    @Workspace
+    com.datadistillr.udf.AreaCodeUtils areaCodeUtils;
+
+    @Inject
+    DrillBuf buffer;
+
+    @Override
+    public void setup() {
+      areaCodeUtils = new AreaCodeUtils();
+    }
+
+    @Override
+    public void eval() {
+      String areaCode = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.getStringFromVarCharHolder(inputAreaCode);
+      areaCode = areaCode.trim();
+      String result = areaCodeUtils.getCountryFromAreaCode(areaCode);
+
+      out.buffer = buffer;
+      out.start = 0;
+      out.end = result.getBytes().length;
+      buffer.setBytes(0, result.getBytes());
+    }
+  }
+
+  @FunctionTemplate(names = {"getLatitudeFromAreaCode", "get_latitude_from_area_code"},
+    scope = FunctionTemplate.FunctionScope.SIMPLE,
+    nulls = FunctionTemplate.NullHandling.NULL_IF_NULL)
+  public static class getLatitudeFromAreaCodeUDF implements DrillSimpleFunc {
+    @Param
+    VarCharHolder inputAreaCode;
+
+    @Output
+    Float8Holder out;
+
+    @Workspace
+    com.datadistillr.udf.AreaCodeUtils areaCodeUtils;
+
+    @Override
+    public void setup() {
+      areaCodeUtils = new AreaCodeUtils();
+    }
+
+    @Override
+    public void eval() {
+      String areaCode = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.getStringFromVarCharHolder(inputAreaCode);
+      areaCode = areaCode.trim();
+      out.value = areaCodeUtils.getLatitudeFromAreaCode(areaCode);
+    }
+  }
+
+  @FunctionTemplate(names = {"getLongitudeFromAreaCode", "get_longitude_from_area_code"},
+    scope = FunctionTemplate.FunctionScope.SIMPLE,
+    nulls = FunctionTemplate.NullHandling.NULL_IF_NULL)
+  public static class getLongitudeFromAreaCodeUDF implements DrillSimpleFunc {
+    @Param
+    VarCharHolder inputAreaCode;
+
+    @Output
+    Float8Holder out;
+
+    @Workspace
+    com.datadistillr.udf.AreaCodeUtils areaCodeUtils;
+
+    @Override
+    public void setup() {
+      areaCodeUtils = new AreaCodeUtils();
+    }
+
+    @Override
+    public void eval() {
+      String areaCode = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.getStringFromVarCharHolder(inputAreaCode);
+      areaCode = areaCode.trim();
+      out.value = areaCodeUtils.getLongitudeFromAreaCode(areaCode);
+    }
+  }
+
+  @FunctionTemplate(names = {"getGeoPointFromAreaCode", "get_geo_point_from_area_code"},
+    scope = FunctionTemplate.FunctionScope.SIMPLE,
+    nulls = FunctionTemplate.NullHandling.NULL_IF_NULL)
+  public static class getGeoPointFromAreaCodeUDF implements DrillSimpleFunc {
+    @Param
+    VarCharHolder inputAreaCode;
+
+    @Output
+    VarBinaryHolder out;
+
+    @Workspace
+    com.datadistillr.udf.AreaCodeUtils areaCodeUtils;
+
+    @Inject
+    DrillBuf buffer;
+
+    @Override
+    public void setup() {
+      areaCodeUtils = new AreaCodeUtils();
+    }
+
+    @Override
+    public void eval() {
+      String areaCode = org.apache.drill.exec.expr.fn.impl.StringFunctionHelpers.getStringFromVarCharHolder(inputAreaCode);
+      areaCode = areaCode.trim();
+
+      Double lon = (Double) areaCodeUtils.getCoordsFromAreaCode(areaCode).get(1);
+      Double lat = (Double) areaCodeUtils.getCoordsFromAreaCode(areaCode).get(0);;
+
+      com.esri.core.geometry.ogc.OGCPoint point = new com.esri.core.geometry.ogc.OGCPoint(
+        new com.esri.core.geometry.Point(lon, lat), com.esri.core.geometry.SpatialReference.create(4326));
+
+      java.nio.ByteBuffer pointBytes = point.asBinary();
+      out.buffer = buffer;
+      out.start = 0;
+      out.end = pointBytes.remaining();
+      buffer.setBytes(0, pointBytes);
     }
   }
 }

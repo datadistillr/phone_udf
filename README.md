@@ -18,20 +18,35 @@ For most functions, there are two versions, one with a region code and one witho
 
 * `getLeadingZeroesFromPhoneNumber(<phoneNumber>)`:  Returns the number of leading zeros in a phone number.
 
-* `geoLocatePhoneNumber(<phoneNumber>)`:  Attempts to geolocate the phone number. If the number is not valid, will return `Invalid Number`.  The function will provide as much 
-  detail as it has, so you might just get a country name or you might get city and country. 
-  
+* `geoLocatePhoneNumber(<phoneNumber>)`:  Attempts to geolocate the phone number. If the number is not valid, will return `Invalid Number`.  The function will provide as much
+  detail as it has, so you might just get a country name or you might get city and country.
+
 * `getNationalNumber(<phoneNumber>, <region_code>)`: Returns the national component of a phone number.
-  
+
 * `getNumberType(<phoneNumber>, <region_code>)`:  Returns the number type (toll free, mobile, land line etc.)  If the region code is omitted, it defaults to `US`.
 
-* `isPhoneNumberMatch(<phoneNumber1>, <phoneNumber2>)`: Returns true if the number is a match, false if not.  Note that the numbers do not need to be in the same format.  IE 
+* `isPhoneNumberMatch(<phoneNumber1>, <phoneNumber2>)`: Returns true if the number is a match, false if not.  Note that the numbers do not need to be in the same format.  IE
   `4101234567` will match `+1 (410) 123-4567`.  
-  
-* `isValidPhoneNumber(<phoneNumber>)` Returns true if the supplied character sequence is a valid phone number, false if not. This does not mean a number can be successfully 
+
+* `isValidPhoneNumber(<phoneNumber>)` Returns true if the supplied character sequence is a valid phone number, false if not. This does not mean a number can be successfully
   dialed, just that it is a valid phone number.
-  
+
 * `normalizePhoneNumber(<phoneNumber>)`: This function removes all non-digit characters from a phone number.
 
-* `truncatePhoneNumber(<phoneNumber>)`: In some countries, extra numbers are ignored, so you can have a legitimate phone number like `1-800-MICROSOFT` where the extra numbers are 
-dropped.  This function will remove any extra characters after the last legal number in a phone number. 
+* `truncatePhoneNumber(<phoneNumber>)`: In some countries, extra numbers are ignored, so you can have a legitimate phone number like `1-800-MICROSOFT` where the extra numbers are
+dropped.  This function will remove any extra characters after the last legal number in a phone number.
+
+* `getAreaCodesFromCity(<city>)`: Accepts a city and returns its area code(s) as a LIST. If city is invalid or not found, returns an empty LIST.
+
+* `getCitiesFromAreaCode(<areaCode>)`: Accepts an area code and returns its related cities as a LIST. If area code is invalid or not found, returns an empty LIST.
+
+* `getCoordsFromAreaCode(<areaCode>)`: Accepts an area code and returns its latitude and longitude pair as a LIST of type DOUBLE. If area code is invalid or not found, returns a LIST containing [0.0, 0.0].
+
+* `getCountryFromAreaCode(<areaCode>)`: Accepts an area code and returns its related country. If area code is invalid or not found, returns 'XX'.
+
+* `getLatitudeFromAreaCode(<areaCode>)`: Accepts an area code and returns its latitude coordinate as type DOUBLE. If area code is invalid or not found, returns 0.0.
+
+* `getLongitudeFromAreaCode(<areaCode>)`: Accepts an area code and returns its longitude coordinate as type DOUBLE. If area code is invalid or not found, returns 0.0.
+
+* `getGeoPointFromAreaCode(<areaCode>)`: Accepts an area code and returns the geolocation point for its latitude/longitude coordinate pair. If area code is invalid or not found, 
+  returns an empty binary element.
